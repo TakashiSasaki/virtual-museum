@@ -9,6 +9,13 @@
 /work/*.zip
 /work/addon_inspect/
 /work/__pycache__/
+/work/link_portability/
+/work/*_log.txt
+/work/inspection.txt
+/work/link_check_*.txt
+/work/link_modify.txt
+/work/render_*.log
+/work/prepare_*.log
 
 # Rendered animation frames are generated from the Blender project
 /outputs/renders/
