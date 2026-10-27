@@ -1,0 +1,14 @@
+# Blender-generated backups and autosaves
+*.blend[0-9]
+*.blend@
+
+# Intermediate renders, scene revisions, and downloaded add-on inspection files
+/work/*.blend
+/work/*.png
+/work/*.jpg
+/work/*.zip
+/work/addon_inspect/
+/work/__pycache__/
+
+# Rendered animation frames are generated from the Blender project
+/outputs/renders/
