@@ -44,6 +44,8 @@ Gameタブのダブルクリックでビューを拡大できます。通常の�
 ## 制作ファイル
 
 - `Assets/Museum/Models/`：Blenderから書き出したFBX 7点。
+- `Assets/Museum/Textures/`：壁塗装、木目、白い化粧板、塗装金属、カーペット、床材、作業マットの繰り返し可能なテクスチャ。RGBは表面色、アルファは細かな凹凸用の高さ情報です。
+- `Assets/Museum/Materials/Surfaces/` と `TriplanarSurface.shader`：壁、床、標本箱、机、棚に使う材質。寸法や向きの異なる面にも、空間内の位置に基づいてテクスチャを適用します。
 - `Assets/Museum/Scripts/`：移動、観察、顕微鏡、FAQ、NPC、自動見学、UI。
 - `Assets/Museum/Scenes/MuseumV1.unity`：編集可能な展示室。
 - `Assets/Museum/Editor/MuseumBuilder.cs`：初回のシーン作成用。既存シーンの上書きを拒否します。通常は保存済みシーンを開いて編集してください。
@@ -51,6 +53,10 @@ Gameタブのダブルクリックでビューを拡大できます。通常の�
 - `../../work/build_v1_assets.py`：モデル作成の再現用。既存のV1元データの上書きを拒否します。
 
 Blender元データとUnity用FBXは両方保持します。Blenderを編集した場合は対象モデルだけFBXを書き出してUnityに再インポートします。`Assets`内の`.meta`は維持してください。
+
+Blender元データは、上記のテクスチャを `Assets/Museum/Textures/` から相対パスで参照します。別PCへのコピー時も、リポジトリ内のBlender元データとUnityプロジェクトの相対配置を保ってください。画像を別途コピーしたりBlenderに埋め込んだりする必要はありません。
+
+テクスチャは `work/generate_material_textures.py` で再生成できます（NumPyが必要）。既存のPNGを置き換える場合は明示的に `--overwrite` を指定します。Unityの材質はモデルに埋め込まず、保存済みシーンの各部品に割り当てています。FBXの再インポートで割り当てが外れた場合は、シーンを保存して再生を止め、Unityの **Museum → Apply V1 Surface Materials** を実行してください。この操作はV1の対象部品に標準の材質を再適用します。Blender側の材質を再適用するためのスクリプトは `work/apply_v1_blender_materials.py` です。
 
 ## エージェント接続
 

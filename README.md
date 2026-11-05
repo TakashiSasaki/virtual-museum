@@ -4,12 +4,15 @@
 
 今回の制作対象は、収蔵棚・作業台・顕微鏡を配置した1部屋の展示室です。ダミー標本3点の回転・拡大、顕微鏡の模式図、巡回するアイモナイト君の簡易モデル、固定解説とFAQ、移動ショートカット、自動見学を実装しています。自由入力のAI回答とWindows版のビルドは対象外です。
 
+壁の塗装、木製標本箱、白い作業台、塗装された棚や床は、それぞれの素材に合わせたテクスチャと反射・凹凸を設定しています。Blenderの元データも、Unityプロジェクト内の同じテクスチャを相対パスで参照します。
+
 - Unityプロジェクト：`unity/VirtualMuseum/`（Unity 6000.6.8f1）
 - 開くシーン：`Assets/Museum/Scenes/MuseumV1.unity`
 - [起動・操作・制限事項](unity/README.md)
 - [バージョン1の仕様](docs/version1-spec.md)
 - Blender元データ：`blender/scenes/museum_v1_assets.blend`
 - [モデル確認画像](blender/previews/museum_v1_assets.png)
+- [展示室のプレビュー](outputs/v1/01_room.png)・[標本棚の質感](outputs/v1/03_shelf_materials.png)・[作業台の質感](outputs/v1/04_workbench_materials.png)
 
 ## 以前の展示室構想（保持）
 

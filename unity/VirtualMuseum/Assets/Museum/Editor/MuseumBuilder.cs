@@ -89,7 +89,9 @@ public static class MuseumBuilder
         PlayerSettings.productName="Virtual Museum — Prototype 01";PlayerSettings.companyName="Virtual Museum";PlayerSettings.runInBackground=true;PlayerSettings.defaultScreenWidth=1440;PlayerSettings.defaultScreenHeight=900;PlayerSettings.fullScreenMode=FullScreenMode.Windowed;
         EditorSceneManager.SaveScene(SceneManager.GetActiveScene(),scenePath);
         EditorBuildSettings.scenes=new[]{new EditorBuildSettingsScene(scenePath,true)};
-        AssetDatabase.SaveAssets();Selection.activeGameObject=app.gameObject;
+        AssetDatabase.SaveAssets();
+        MuseumMaterialStyling.Apply();
+        Selection.activeGameObject=app.gameObject;
         SceneView.lastActiveSceneView?.LookAt(new Vector3(0,1.3f,7),Quaternion.Euler(20,0,0),10);
         Debug.Log("Museum V1 scene built with 3 exhibits and 5 destinations.");
     }
