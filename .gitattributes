@@ -1,0 +1,2 @@
+# Git detects text files automatically; binary files remain unchanged.
+* text=auto

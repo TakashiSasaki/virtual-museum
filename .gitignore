@@ -1,0 +1,34 @@
+# Blender backup and temporary files
+*.blend[0-9]*
+*.blend@*
+
+# Unity generated files (keep Assets, Packages, ProjectSettings and .meta files)
+/unity/**/[Ll]ibrary/
+/unity/**/[Tt]emp/
+/unity/**/[Oo]bj/
+/unity/**/[Bb]uild/
+/unity/**/[Bb]uilds/
+/unity/**/[Ll]ogs/
+/unity/**/[Uu]ser[Ss]ettings/
+/unity/**/[Mm]emoryCaptures/
+/unity/**/[Rr]ecordings/
+/unity/**/Assets/AssetStoreTools*
+/unity/**/*.csproj
+/unity/**/*.sln
+/unity/**/*.slnx
+/unity/**/*.user
+/unity/**/*.userprefs
+/unity/**/*.pidb
+/unity/**/*.svd
+/unity/**/*.pdb
+/unity/**/*.mdb
+/unity/**/*.opendb
+/unity/**/*.VC.db
+/unity/**/sysinfo.txt
+/unity/**/.vs/
+/unity/**/.idea/
+
+# Operating system files
+.DS_Store
+Thumbs.db
+desktop.ini
