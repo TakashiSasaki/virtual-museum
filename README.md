@@ -1,5 +1,18 @@
 # バーチャル展示室
 
+## バージョン1：操作できる1部屋のプロトタイプ
+
+今回の制作対象は、収蔵棚・作業台・顕微鏡を配置した1部屋の展示室です。ダミー標本3点の回転・拡大、顕微鏡の模式図、巡回するアイモナイト君の簡易モデル、固定解説とFAQ、移動ショートカット、自動見学を実装しています。自由入力のAI回答とWindows版のビルドは対象外です。
+
+- Unityプロジェクト：`unity/VirtualMuseum/`（Unity 6000.6.8f1）
+- 開くシーン：`Assets/Museum/Scenes/MuseumV1.unity`
+- [起動・操作・制限事項](unity/README.md)
+- [バージョン1の仕様](docs/version1-spec.md)
+- Blender元データ：`blender/scenes/museum_v1_assets.blend`
+- [モデル確認画像](blender/previews/museum_v1_assets.png)
+
+## 以前の展示室構想（保持）
+
 愛媛大学ミュージアムの参考写真をもとに作成した、Blender 5.2の展示室構想です。自然史、アートと科学、資料と地域の3ゾーンを歩いて巡ることができます。寸法と一部の展示品は構想用の仮設定です。
 
 - [展示室のBlenderファイル（共有アセットをリンク）](outputs/museum_walkthrough_linked.blend)
@@ -24,7 +37,7 @@ Blenderファイルには参考写真の一部が埋め込まれています。�
 - `work/` — 展示室の制作・確認用スクリプト。
 - `blender/scenes/` — 初期のギャラリーとサッカーボールの Blender 編集用ファイル。
 - `blender/previews/` — 初期作品のレンダリング画像。
-- `unity/VirtualMuseum/` — 今後作成する Unity プロジェクトの配置先（現時点では未作成）。
+- `unity/VirtualMuseum/` — バージョン1のUnityプロジェクト。起動方法は `unity/README.md` を参照。
 
 Blender の元データを `blender/` に置き、Unity で使う書き出しデータは Unity プロジェクトの `Assets/` 配下に配置してください。Unity の `Assets/`、`Packages/`、`ProjectSettings/` と `.meta` ファイルは Git で管理し、`Library/` 等の生成物は管理対象から除外します。
 
