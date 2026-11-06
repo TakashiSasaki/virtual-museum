@@ -72,6 +72,11 @@
   </main>
   <script>
     (() => {
+      if (window.isSecureContext && "serviceWorker" in navigator) {
+        navigator.serviceWorker.register("./museum-sw.js", { scope: "./", updateViaCache: "none" })
+          .catch((error) => console.warn("Museum service worker:", error));
+      }
+
       const app = document.getElementById("museum-app");
       const canvas = document.getElementById("unity-canvas");
       const overlay = document.getElementById("entry-overlay");
