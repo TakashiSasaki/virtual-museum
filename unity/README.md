@@ -139,3 +139,7 @@ Blenderでは部品を個別に編集でき、Unity用FBXでは同じ材質の�
 ## エージェント接続
 
 Unity Pipeline `0.10.0-exp.1` を導入済みです。Editorを開いた状態で `unity status` から接続を確認できます。再生中の先生の操作とエージェントによる変更が競合しないよう、操作確認時はエージェントの変更を止めます。
+
+## 追加展示用の素材バンク
+
+昆虫14点、化石5点、土器・石器6点を Assets/Museum/ReserveCollection.asset に登録しています。Museum → Prepare Reserve Collection で再構成できます。現行展示とは別管理です。[一覧・利用方法](../docs/reserve-collection.md)。
