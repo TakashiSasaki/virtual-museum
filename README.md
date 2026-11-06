@@ -4,7 +4,13 @@
 
 今回の制作対象は、収蔵棚・作業台・顕微鏡を配置した1部屋の展示室です。ダミー標本3点の回転・拡大、顕微鏡の模式図、巡回するアイモナイト君の簡易モデル、固定解説とFAQ、移動ショートカット、自動見学を実装しています。自由入力のAI回答とWindows版のビルドは対象外です。
 
-壁の塗装、木製標本箱、白い作業台、塗装された棚や床は、それぞれの素材に合わせたテクスチャと反射・凹凸を設定しています。Blenderの元データも、Unityプロジェクト内の同じテクスチャを相対パスで参照します。
+壁の塗装、木製標本箱、カーペットには写真ベースの色・凹凸・粗さを設定しています。箱の蓋合わせ目・金具を加え、実体顕微鏡を双眼鏡筒・焦点調節ノブ・カメラ・LED照明のある造形へ更新しました。Blenderの元データもUnityと同じテクスチャを相対パスで参照します。[素材の出典](docs/material-sources.md)。
+
+作業台まわりに背付き回転椅子3脚、丸い回転スツール2脚、台下引出3台、ワゴン2台を配置し、奥壁に両開き収納棚2台を追加しています。椅子は五本脚・双輪キャスター・昇降軸のある研究室用の造形です。
+
+操作できる場所には、床の分割リングとアイコン・日本語の操作案内を組み合わせた光るサインを配置しています。標本3か所は金色、顕微鏡3か所は青緑、巡回するアイモナイト君は紫色です。サインをクリックして観察や解説を開けるほか、標本・顕微鏡に近づいて操作可能になるとEキーの案内に変わります。
+
+一度観察や解説を体験した場所は、サインを残したままチェックマークと「体験済み」の表示へ変わります。床のリングはつながった輪になり、光の明滅が落ち着きます。体験済みの場所も何度でも操作でき、履歴はその回の見学中に保持します。
 
 - Unityプロジェクト：`unity/VirtualMuseum/`（Unity 6000.6.8f1）
 - 開くシーン：`Assets/Museum/Scenes/MuseumV1.unity`
@@ -13,6 +19,10 @@
 - Blender元データ：`blender/scenes/museum_v1_assets.blend`
 - [モデル確認画像](blender/previews/museum_v1_assets.png)
 - [展示室のプレビュー](outputs/v1/01_room.png)・[標本棚の質感](outputs/v1/03_shelf_materials.png)・[作業台の質感](outputs/v1/04_workbench_materials.png)
+- [実体顕微鏡の造形](blender/previews/microscope_detail.png)・[ドイツ箱の造形](blender/previews/specimen_boxes_detail.png)・[床と壁の質感](outputs/v1/05_floor_materials.png)
+- [什器追加後の作業台](outputs/v1/06_lab_furniture.png)・[回転椅子と丸椅子](blender/previews/lab_seating.png)・[追加収納家具](blender/previews/lab_storage.png)
+- [操作場所を示す光るサイン](outputs/v1/10_interaction_wayfinding.png)・[近づいたときの操作案内](outputs/v1/11_wayfinding_ready.png)
+- [体験済みに変化したサイン](outputs/v1/12_experienced_wayfinding.png)
 
 ## 以前の展示室構想（保持）
 

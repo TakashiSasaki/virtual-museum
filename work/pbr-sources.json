@@ -1,0 +1,228 @@
+{
+  "retrieved_on": "2026-11-06",
+  "normal_convention": "OpenGL (+Y)",
+  "base_color_space": "sRGB",
+  "normal_roughness_height_color_space": "Linear",
+  "assets": [
+    {
+      "material": "Walnut",
+      "provider": "Poly Haven",
+      "asset_id": "fine_grained_wood",
+      "title": "Fine Grained Wood",
+      "source_url": "https://polyhaven.com/a/fine_grained_wood",
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "authors": {
+        "Rob Tuytel": "All"
+      },
+      "source_dimensions_m": [
+        0.6,
+        0.6
+      ],
+      "notes": "Fine-grained dark wood used as the specimen-box finish; not a botanical identification as walnut. Grain runs vertically in source image.",
+      "maps": [
+        {
+          "channel": "NormalGL",
+          "path": "unity/VirtualMuseum/Assets/Museum/Textures/PBR/Walnut_NormalGL.jpg",
+          "source_url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/fine_grained_wood/fine_grained_wood_nor_gl_1k.jpg",
+          "source_filename": "fine_grained_wood_nor_gl_1k.jpg",
+          "resolution": "1K",
+          "bytes": 193626,
+          "sha256": "ba95eadc009818e161d0f753191f1bacc3fc861e593be0bc6d82b437f9ec8044",
+          "modifications": "None; renamed only.",
+          "pixel_dimensions": [
+            1024,
+            1024
+          ]
+        },
+        {
+          "channel": "BaseColor",
+          "path": "unity/VirtualMuseum/Assets/Museum/Textures/PBR/Walnut_BaseColor.jpg",
+          "source_url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/fine_grained_wood/fine_grained_wood_col_1k.jpg",
+          "source_filename": "fine_grained_wood_col_1k.jpg",
+          "resolution": "1K",
+          "bytes": 336305,
+          "sha256": "d171f45ef01bc6e239b00dfaa4961bcd27f7d8e93e3962da3bd3d0ce703d802c",
+          "modifications": "None; renamed only.",
+          "pixel_dimensions": [
+            1024,
+            1024
+          ]
+        },
+        {
+          "channel": "Roughness",
+          "path": "unity/VirtualMuseum/Assets/Museum/Textures/PBR/Walnut_Roughness.jpg",
+          "source_url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/fine_grained_wood/fine_grained_wood_rough_1k.jpg",
+          "source_filename": "fine_grained_wood_rough_1k.jpg",
+          "resolution": "1K",
+          "bytes": 215155,
+          "sha256": "f281f682e62fe322303dfeaa13dac18b5cb9e113617fe0aca43605b49161d82b",
+          "modifications": "None; renamed only.",
+          "pixel_dimensions": [
+            1024,
+            1024
+          ]
+        }
+      ]
+    },
+    {
+      "material": "WallPaint",
+      "provider": "Poly Haven",
+      "asset_id": "white_plaster_02",
+      "title": "White Plaster 02",
+      "source_url": "https://polyhaven.com/a/white_plaster_02",
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "authors": {
+        "Rob Tuytel": "All"
+      },
+      "source_dimensions_m": [
+        1.0,
+        1.0
+      ],
+      "notes": "White plaster surface used with low normal strength and off-white color adjustment for the painted museum walls.",
+      "maps": [
+        {
+          "channel": "NormalGL",
+          "path": "unity/VirtualMuseum/Assets/Museum/Textures/PBR/WallPaint_NormalGL.jpg",
+          "source_url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/white_plaster_02/white_plaster_02_nor_gl_1k.jpg",
+          "source_filename": "white_plaster_02_nor_gl_1k.jpg",
+          "resolution": "1K",
+          "bytes": 652310,
+          "sha256": "eb572ca3630d5bfde72e2601b1f02412da23ca005cd19384dced8690be4cb783",
+          "modifications": "None; renamed only.",
+          "pixel_dimensions": [
+            1024,
+            1024
+          ]
+        },
+        {
+          "channel": "Height",
+          "path": "unity/VirtualMuseum/Assets/Museum/Textures/PBR/WallPaint_Height.jpg",
+          "source_url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/white_plaster_02/white_plaster_02_disp_1k.jpg",
+          "source_filename": "white_plaster_02_disp_1k.jpg",
+          "resolution": "1K",
+          "bytes": 282756,
+          "sha256": "72c6b1f2015cc35c0323c514be5b36a6460917336783aa7fe1200845f38ce56b",
+          "modifications": "None; renamed only.",
+          "pixel_dimensions": [
+            1024,
+            1024
+          ]
+        },
+        {
+          "channel": "BaseColor",
+          "path": "unity/VirtualMuseum/Assets/Museum/Textures/PBR/WallPaint_BaseColor.jpg",
+          "source_url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/white_plaster_02/white_plaster_02_diff_1k.jpg",
+          "source_filename": "white_plaster_02_diff_1k.jpg",
+          "resolution": "1K",
+          "bytes": 527219,
+          "sha256": "a1ebbe091bd1ae93d2abd5de8d69f9003a8d0ee6532bcf9a87c2492c97051f23",
+          "modifications": "None; renamed only.",
+          "pixel_dimensions": [
+            1024,
+            1024
+          ]
+        },
+        {
+          "channel": "Roughness",
+          "path": "unity/VirtualMuseum/Assets/Museum/Textures/PBR/WallPaint_Roughness.jpg",
+          "source_url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/white_plaster_02/white_plaster_02_rough_1k.jpg",
+          "source_filename": "white_plaster_02_rough_1k.jpg",
+          "resolution": "1K",
+          "bytes": 295900,
+          "sha256": "4ff1fe957cd161b07f721fe6c28a9459c8c2e8ec65627a26c16e483a07c80d85",
+          "modifications": "None; renamed only.",
+          "pixel_dimensions": [
+            1024,
+            1024
+          ]
+        }
+      ]
+    },
+    {
+      "material": "Carpet",
+      "provider": "ambientCG",
+      "asset_id": "Carpet016",
+      "title": "Carpet 016",
+      "source_url": "https://ambientcg.com/view?id=Carpet016",
+      "license": "CC0-1.0",
+      "license_url": "https://docs.ambientcg.com/license/",
+      "authors": [
+        "ambientCG"
+      ],
+      "creation_method": "Surface Photogrammetry",
+      "source_dimensions_m": [
+        1.7,
+        1.7
+      ],
+      "notes": "Fine beige wool loop texture; material tint can darken it towards the reference room carpet. Geometry displacement is not required.",
+      "maps": [
+        {
+          "channel": "NormalGL",
+          "path": "unity/VirtualMuseum/Assets/Museum/Textures/PBR/Carpet_NormalGL.jpg",
+          "source_url": "https://ambientcg.com/get?file=Carpet016_1K-JPG.zip",
+          "source_filename": "Carpet016_1K-JPG_NormalGL.jpg",
+          "resolution": "1K",
+          "bytes": 2179963,
+          "sha256": "2820cad2593d1e1b58ce1fa38cb53e24be05bf935b40393c379be828a35755ea",
+          "modifications": "None; renamed only.",
+          "pixel_dimensions": [
+            1024,
+            1024
+          ]
+        },
+        {
+          "channel": "Height",
+          "path": "unity/VirtualMuseum/Assets/Museum/Textures/PBR/Carpet_Height.jpg",
+          "source_url": "https://ambientcg.com/get?file=Carpet016_1K-JPG.zip",
+          "source_filename": "Carpet016_1K-JPG_Displacement.jpg",
+          "resolution": "1K",
+          "bytes": 736301,
+          "sha256": "af726f88cdade3677ec46548bb0f2e8c5c12b8143cd87bd37d082015052b173a",
+          "modifications": "None; renamed only.",
+          "pixel_dimensions": [
+            1024,
+            1024
+          ]
+        },
+        {
+          "channel": "BaseColor",
+          "path": "unity/VirtualMuseum/Assets/Museum/Textures/PBR/Carpet_BaseColor.jpg",
+          "source_url": "https://ambientcg.com/get?file=Carpet016_1K-JPG.zip",
+          "source_filename": "Carpet016_1K-JPG_Color.jpg",
+          "resolution": "1K",
+          "bytes": 1207660,
+          "sha256": "c6fca66d1d570d27a921d7cb35b1963e83844e2b8ceec70f0193db5e99e04123",
+          "modifications": "None; renamed only.",
+          "pixel_dimensions": [
+            1024,
+            1024
+          ]
+        },
+        {
+          "channel": "Roughness",
+          "path": "unity/VirtualMuseum/Assets/Museum/Textures/PBR/Carpet_Roughness.jpg",
+          "source_url": "https://ambientcg.com/get?file=Carpet016_1K-JPG.zip",
+          "source_filename": "Carpet016_1K-JPG_Roughness.jpg",
+          "resolution": "1K",
+          "bytes": 686755,
+          "sha256": "307c7984100374da53261c51dee33665049e3fc5e0e90143da1f58b040298268",
+          "modifications": "None; renamed only.",
+          "pixel_dimensions": [
+            1024,
+            1024
+          ]
+        }
+      ]
+    }
+  ],
+  "not_selected": [
+    {
+      "asset_id": "linoleum_brown",
+      "source_url": "https://polyhaven.com/a/linoleum_brown",
+      "reason": "Source color is too ochre-brown for the pale vinyl floor in the reference; use the project procedural vinyl instead."
+    }
+  ],
+  "total_bytes": 7313950
+}

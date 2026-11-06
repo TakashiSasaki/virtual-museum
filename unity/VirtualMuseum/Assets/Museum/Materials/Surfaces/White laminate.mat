@@ -23,15 +23,36 @@ Material:
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
+    - _HeightMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _MainTex:
         m_Texture: {fileID: 2800000, guid: 690c5da9970922749ab929862732cbcd, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _NormalMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _RoughnessMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _ColorUniformity: 0
     - _Metallic: 0
-    - _Relief: 0.0008
-    - _Smoothness: 0.34
+    - _NormalStrength: 0.3
+    - _ObjectCoordinates: 0
+    - _ObjectVariation: 0
+    - _Relief: 0.00012
+    - _RoughnessMax: 1
+    - _RoughnessMin: 0
+    - _Smoothness: 0.38
+    - _TextureRotation: 0
+    - _TileSeamWidth: 0.0008
+    - _TileSize: 0
     - _Tiling: 1.45
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}

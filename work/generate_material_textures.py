@@ -82,11 +82,18 @@ def textures():
     carpet = rgba((.44, .43, .39), .025*weave + .012*carpet_noise,
                   .18*weave + .09*carpet_noise, (1, .98, .9))
 
-    # Quiet, smooth vinyl workroom floor with fine mineral flecks.
-    floor_cloud, floor_grain = noise(10), noise(115)
-    fleck = np.maximum(noise(125)-2.0, 0)
-    vinyl = rgba((.69, .69, .65), .009*floor_cloud + .005*floor_grain - .008*fleck,
-                 .035*floor_cloud + .045*floor_grain - .06*fleck)
+    # Commercial homogeneous vinyl: a continuous pale warm-grey sheet rather
+    # than wooden planks or stone slabs. At 1 repeat/metre these mineral flecks
+    # are millimetres across. Most contrast belongs in the finish, not color.
+    floor_cloud, floor_grain = noise(5), noise(150)
+    dark_fleck = np.maximum(noise(210)-1.35, 0)
+    light_fleck = np.maximum(noise(190)-1.55, 0)
+    wear_mask = np.maximum(noise(6)-.6, 0)
+    fine_scuff = noise(90, 5) * wear_mask
+    vinyl = rgba((.735, .738, .705),
+                 .0035*floor_cloud + .003*floor_grain - .014*dark_fleck +
+                 .009*light_fleck - .0015*fine_scuff,
+                 .018*floor_grain - .025*dark_fleck + .018*light_fleck + .009*fine_scuff)
 
     # Soft grained rubber work mat.
     rubber_fine = noise(95)
@@ -101,8 +108,15 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--overwrite', action='store_true')
+    parser.add_argument('--only', nargs='+', help='Write only these texture names, e.g. VinylFloor (with or without .png)')
     args = parser.parse_args()
     maps = textures()
+    if args.only:
+        requested = {name if name.endswith('.png') else name + '.png' for name in args.only}
+        unknown = requested - maps.keys()
+        if unknown:
+            raise SystemExit('Unknown texture names: ' + ', '.join(sorted(unknown)))
+        maps = {name: pixels for name, pixels in maps.items() if name in requested}
     collisions = [str(args.output / name) for name in maps if (args.output / name).exists()]
     if collisions and not args.overwrite:
         raise SystemExit('Refusing to overwrite: ' + ', '.join(collisions))

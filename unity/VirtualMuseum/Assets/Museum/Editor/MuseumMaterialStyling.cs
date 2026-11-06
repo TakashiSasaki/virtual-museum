@@ -27,16 +27,20 @@ public static class MuseumMaterialStyling
             throw new InvalidOperationException("Museum surface shader is missing or unsupported.");
         Directory.CreateDirectory(MaterialsPath);
         Materials.Clear();
-        // Tiling is specified in repeats per metre. Colors live in the texture;
-        // the neutral tint avoids multiplying the photographed palette twice.
-        Make("Wall paint", "WallPaint", 1.15f, 0f, .13f, .00035f, Color.white);
-        Make("Walnut varnished", "Walnut", 1.0f, 0f, .30f, .0015f, Color.white);
-        Make("White laminate", "Laminate", 1.45f, 0f, .34f, .0008f, Color.white);
-        Make("Powder coated steel", "PowderCoat", 1.7f, 0f, .33f, .0008f, Color.white);
-        Make("Woven carpet", "CarpetWeave", 1.4f, 0f, .06f, .0018f, Color.white);
-        Make("Vinyl floor", "VinylFloor", 1.2f, 0f, .24f, .0008f, Color.white);
-        Make("Green rubber mat", "RubberMat", 2f, 0f, .16f, .0008f, Color.white);
-        Make("Brushed metal trim", "PowderCoat", 2f, .72f, .46f, .0005f, new Color(.68f,.70f,.69f));
+        // Photographs use their documented physical size, in repeats per metre.
+        // Paint's broad plaster variation is reduced; its fine normal survives.
+        Make("Wall paint", "WallPaint", 1.15f, 0f, .12f, .00015f, new Color(.94f,.94f,.92f),
+            pbr:"WallPaint", pbrTiling:1f, normal:.12f, roughMin:.80f, roughMax:.96f, uniformity:.68f);
+        Make("Walnut varnished", "Walnut", 1f, 0f, .39f, .00025f, Color.white,
+            pbr:"Walnut", pbrTiling:1f/.6f, normal:.28f, roughMin:.30f, roughMax:.67f,
+            local:true, rotation:90f, variation:.035f);
+        Make("White laminate", "Laminate", 1.45f, 0f, .38f, .00012f, Color.white);
+        Make("Powder coated steel", "PowderCoat", 1.7f, 0f, .30f, .00016f, Color.white);
+        Make("Woven carpet", "CarpetWeave", 1.4f, 0f, .035f, .0007f, new Color(.82f,.80f,.75f),
+            pbr:"Carpet", pbrTiling:1f/1.7f, normal:.50f, roughMin:.86f, roughMax:.99f, tileSize:.5f);
+        Make("Vinyl floor", "VinylFloor", 1f, 0f, .28f, .00016f, Color.white);
+        Make("Green rubber mat", "RubberMat", 2f, 0f, .16f, .00018f, Color.white);
+        Make("Brushed metal trim", "PowderCoat", 2f, .78f, .48f, .00012f, new Color(.68f,.70f,.69f));
 
         int count = 0;
         foreach (var renderer in UnityEngine.Object.FindObjectsByType<Renderer>(FindObjectsInactive.Include))
@@ -57,24 +61,61 @@ public static class MuseumMaterialStyling
         Debug.Log($"Museum V1: applied realistic surface materials to {count} renderers.");
     }
 
-    static void Make(string name, string image, float tiling, float metallic,
-                     float smoothness, float relief, Color color)
+    static Texture2D ImportTexture(string texturePath, bool normal = false, bool color = true)
     {
-        string texturePath = Root + "Textures/" + image + ".png";
         var importer = AssetImporter.GetAtPath(texturePath) as TextureImporter;
         if (importer == null) throw new FileNotFoundException("Missing texture", texturePath);
-        // Alpha is a height map, not transparency. Preserve it unchanged.
+        var type = normal ? TextureImporterType.NormalMap : TextureImporterType.Default;
+        // Color is sRGB; normal/roughness/height are linear data. Legacy PNG
+        // alpha remains a height channel, not cutout or glass transparency.
         if (importer.alphaIsTransparency || importer.wrapMode != TextureWrapMode.Repeat ||
-            importer.textureCompression != TextureImporterCompression.Uncompressed || !importer.mipmapEnabled)
+            importer.textureCompression != TextureImporterCompression.Uncompressed || !importer.mipmapEnabled ||
+            importer.textureType != type || importer.sRGBTexture != (color && !normal) ||
+            importer.anisoLevel != 8 || importer.filterMode != FilterMode.Trilinear)
         {
+            importer.textureType = type;
+            importer.sRGBTexture = color && !normal;
             importer.alphaIsTransparency = false;
             importer.wrapMode = TextureWrapMode.Repeat;
             importer.textureCompression = TextureImporterCompression.Uncompressed;
             importer.mipmapEnabled = true;
+            importer.anisoLevel = 8;
+            importer.filterMode = FilterMode.Trilinear;
             importer.SaveAndReimport();
         }
         var texture = AssetDatabase.LoadAssetAtPath<Texture2D>(texturePath);
         if (!texture) throw new FileNotFoundException("Could not import texture", texturePath);
+        return texture;
+    }
+
+    static string FindPbr(string name, string map)
+    {
+        if (string.IsNullOrEmpty(name)) return null;
+        foreach (string extension in new[] { ".jpg", ".png", ".jpeg" })
+        {
+            string path = Root + "Textures/PBR/" + name + "_" + map + extension;
+            if (File.Exists(path)) return path;
+        }
+        return null;
+    }
+
+    static void SetMap(Material material, string property, string keyword, string path, bool normal = false)
+    {
+        material.SetTexture(property, path == null ? null : ImportTexture(path, normal, false));
+        if (path == null) material.DisableKeyword(keyword);
+        else material.EnableKeyword(keyword);
+    }
+
+    static void Make(string name, string image, float tiling, float metallic,
+                     float smoothness, float relief, Color color, string pbr = null,
+                     float pbrTiling = 1f, float normal = .3f, float roughMin = 0f,
+                     float roughMax = 1f, bool local = false, float rotation = 0f,
+                     float variation = 0f, float tileSize = 0f, float uniformity = 0f)
+    {
+        string photoPath = FindPbr(pbr, "BaseColor");
+        bool photographic = photoPath != null;
+        string texturePath = photoPath ?? Root + "Textures/" + image + ".png";
+        var texture = ImportTexture(texturePath);
         string path = MaterialsPath + name + ".mat";
         var material = AssetDatabase.LoadAssetAtPath<Material>(path);
         if (!material)
@@ -85,10 +126,24 @@ public static class MuseumMaterialStyling
         material.shader = Shader.Find("Museum/Triplanar Surface");
         material.SetTexture("_MainTex", texture);
         material.SetColor("_Color", color);
-        material.SetFloat("_Tiling", tiling);
+        material.SetFloat("_ColorUniformity", photographic ? uniformity : 0);
+        material.SetFloat("_Tiling", photographic ? pbrTiling : tiling);
+        material.SetFloat("_ObjectCoordinates", local ? 1 : 0);
+        material.SetFloat("_TextureRotation", photographic ? rotation : 0);
+        material.SetFloat("_ObjectVariation", variation);
         material.SetFloat("_Metallic", metallic);
         material.SetFloat("_Smoothness", smoothness);
-        material.SetFloat("_Relief", relief);
+        material.SetFloat("_RoughnessMin", roughMin);
+        material.SetFloat("_RoughnessMax", roughMax);
+        material.SetFloat("_NormalStrength", normal);
+        string normalPath = photographic ? FindPbr(pbr, "NormalGL") : null;
+        string heightPath = photographic ? FindPbr(pbr, "Height") : null;
+        material.SetFloat("_Relief", photographic && heightPath == null ? 0 : relief);
+        SetMap(material, "_NormalMap", "_SURFACE_NORMAL", normalPath, true);
+        SetMap(material, "_RoughnessMap", "_SURFACE_ROUGHNESS", photographic ? FindPbr(pbr, "Roughness") : null);
+        SetMap(material, "_HeightMap", "_SURFACE_HEIGHT", heightPath);
+        material.SetFloat("_TileSize", tileSize);
+        material.SetFloat("_TileSeamWidth", .0008f);
         EditorUtility.SetDirty(material);
         Materials[name] = material;
     }

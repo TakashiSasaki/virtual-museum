@@ -77,7 +77,7 @@ public static class MuseumBuilder
         Box("Back information panel",new Vector3(0,1.2f,13.83f),new Vector3(3,.75f,.06f),green);
         Sign("LOOK  /  ROTATE  /  DISCOVER",new Vector3(0,1.25f,13.77f),Quaternion.identity,.09f,Color.white);
         var npc=Model("Aimonite",new Vector3(.8f,0,6),Quaternion.identity);app.guide=npc.transform;
-        npc.AddComponent<GuideMarker>();Obstacle(npc,new Vector3(0,1,0),new Vector3(1.3f,2,.55f),true);
+        npc.AddComponent<GuideMarker>();Obstacle(npc,new Vector3(-.03f,1.15f,-.05f),new Vector3(1.65f,2.3f,1f),true);
 
         var player=new GameObject("Visitor");player.transform.position=app.destinations[4].position;
         var cc=player.AddComponent<CharacterController>();cc.height=1.7f;cc.center=new Vector3(0,.85f,0);cc.radius=.25f;cc.stepOffset=.15f;app.visitor=cc;

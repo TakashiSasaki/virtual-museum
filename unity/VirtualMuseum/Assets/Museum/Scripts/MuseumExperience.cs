@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class MuseumExperience : MonoBehaviour
+public partial class MuseumExperience : MonoBehaviour
 {
     public Camera visitorCamera;
     public CharacterController visitor;
@@ -33,6 +33,7 @@ public class MuseumExperience : MonoBehaviour
     readonly string[] tourTitles = { "収蔵庫へようこそ", "01  標本を手に取る", "02  回して、比べてみよう", "03  顕微鏡で観察", "04  アイモナイト君に聞く", "自由に探検してみよう" };
     readonly float[] tourDurations = { 7, 7, 10, 12, 10, 7 };
     GameObject held;
+    MuseumWayfinding wayfinding;
     Quaternion initialRotation;
     float yaw, pitch, zoom=1, scopeZoom=1;
     Vector2 scopePan = new Vector2(.5f,.5f);
@@ -45,7 +46,7 @@ public class MuseumExperience : MonoBehaviour
     Texture2D panel, dark, accent, pale;
     GUIStyle titleStyle, subtitleStyle, bodyStyle, smallStyle, buttonStyle, primaryStyle, darkTextStyle;
     float uiWidth=1440, uiHeight=900;
-    string notice="標本をクリックするか、展示一覧から選んでください。";
+    string notice="光るサインをクリックして観察。近づいて対象を見ると E キーでも操作できます。";
 
     void Start()
     {
@@ -57,6 +58,8 @@ public class MuseumExperience : MonoBehaviour
         for(int i=0;i<3;i++) scopeTextures[i]=MakeScope(i);
         specimenCamera.targetTexture=specimenView;
         specimenCamera.gameObject.SetActive(false);
+        SetupImmersion();
+        wayfinding=FindAnyObjectByType<MuseumWayfinding>();
     }
 
     void Update()
@@ -66,16 +69,18 @@ public class MuseumExperience : MonoBehaviour
         if(keys!=null && keys.escapeKey.wasPressedThisFrame) {
             if(touring) StopTour(); else if(mode!="walk") CloseObservation(); else { listOpen=false; helpOpen=false; answer=""; }
         }
+        UpdateImmersion();
+        UpdateNearbyInteraction(keys);
         if(touring) {
             if(!tourPaused) {
-                if(tourMoving) UpdateTourTravel();
-                else {
+                if(tourMoving) { if(!ImmersionActive) UpdateTourTravel(); }
+                else if(!ImmersionTransitioning) {
                     tourElapsed+=Time.deltaTime;
                     if(mode=="observe" && held) held.transform.Rotate(Vector3.up,20*Time.deltaTime,Space.World);
                     if(tourElapsed>=tourDurations[tourStep]) AdvanceTour();
                 }
             }
-        } else if(mode=="walk" && answer=="" && !helpOpen) {
+        } else if(mode=="walk" && !ImmersionActive && answer=="" && !helpOpen) {
             float x=0,z=0;
             if(keys!=null) {
                 x=(keys.rightArrowKey.isPressed||keys.dKey.isPressed?1:0)-(keys.leftArrowKey.isPressed||keys.aKey.isPressed?1:0);
@@ -85,26 +90,32 @@ public class MuseumExperience : MonoBehaviour
                 if(mouse.rightButton.isPressed) {
                     Vector2 delta=mouse.delta.ReadValue(); yaw+=delta.x*.13f; pitch=Mathf.Clamp(pitch-delta.y*.13f,-60,60);
                 }
-                if(mouse.leftButton.wasPressedThisFrame && Physics.Raycast(visitorCamera.ScreenPointToRay(mouse.position.ReadValue()),out var hit,40)) {
-                    var exhibit=hit.collider.GetComponentInParent<MuseumExhibit>();
-                    if(exhibit) Observe(exhibit.index);
-                    else if(hit.collider.GetComponentInParent<MicroscopeStation>()) Microscope();
-                    else if(hit.collider.name=="Walkable floor" || hit.collider.name=="Work area floor" || hit.collider.name=="Aisle marker" || hit.collider.name=="Metal floor strip") {walkTarget=hit.point;walkTarget.y=visitor.transform.position.y;walking=true;}
-                    else if(hit.collider.GetComponentInParent<GuideMarker>()) Talk();
+                if(mouse.leftButton.wasPressedThisFrame) {
+                    Ray ray=visitorCamera.ScreenPointToRay(mouse.position.ReadValue());
+                    bool usedSign=wayfinding && wayfinding.TryActivate(ray);
+                    if(!usedSign && Physics.Raycast(ray,out var hit,40)) {
+                        var exhibit=hit.collider.GetComponentInParent<MuseumExhibit>();
+                        if(exhibit) Observe(exhibit.index);
+                        else if(hit.collider.GetComponentInParent<MicroscopeStation>() is MicroscopeStation station) Microscope(station);
+                        else if(hit.collider.name=="Walkable floor" || hit.collider.name=="Work area floor" || hit.collider.name=="Aisle marker" || hit.collider.name=="Metal floor strip") {walkTarget=hit.point;walkTarget.y=visitor.transform.position.y;walking=true;}
+                        else if(hit.collider.GetComponentInParent<GuideMarker>()) Talk();
+                    }
                 }
             }
-            visitor.transform.rotation=Quaternion.Euler(0,yaw,0);visitorCamera.transform.localRotation=Quaternion.Euler(pitch,0,0);
-            var move=Vector3.ClampMagnitude(visitor.transform.right*x+visitor.transform.forward*z,1);
-            if(move.sqrMagnitude>0) walking=false;
-            if(walking) {
-                var delta=walkTarget-visitor.transform.position;delta.y=0;
-                if(delta.magnitude<.15f) walking=false; else move=delta.normalized;
+            if(!ImmersionActive) {
+                visitor.transform.rotation=Quaternion.Euler(0,yaw,0);visitorCamera.transform.localRotation=Quaternion.Euler(pitch,0,0);
+                var move=Vector3.ClampMagnitude(visitor.transform.right*x+visitor.transform.forward*z,1);
+                if(move.sqrMagnitude>0) walking=false;
+                if(walking) {
+                    var delta=walkTarget-visitor.transform.position;delta.y=0;
+                    if(delta.magnitude<.15f) walking=false; else move=delta.normalized;
+                }
+                Vector3 before=visitor.transform.position;
+                visitor.Move((move*2.4f+Vector3.down*2)*Time.deltaTime);
+                if(walking && move.sqrMagnitude>0 && (visitor.transform.position-before).sqrMagnitude<.000001f) {walking=false;notice="障害物があります。通路の床を選ぶか、展示一覧を使ってください。";}
             }
-            Vector3 before=visitor.transform.position;
-            visitor.Move((move*2.4f+Vector3.down*2)*Time.deltaTime);
-            if(walking && move.sqrMagnitude>0 && (visitor.transform.position-before).sqrMagnitude<.000001f) {walking=false;notice="障害物があります。通路の床を選ぶか、展示一覧を使ってください。";}
         }
-        if(mouse!=null && !touring && (mode=="observe"||mode=="scope") && !OverUI(mouse.position.ReadValue())) {
+        if(mouse!=null && !touring && !ImmersionTransitioning && (mode=="observe"||mode=="scope") && !OverUI(mouse.position.ReadValue())) {
             Vector2 delta=mouse.delta.ReadValue();float scroll=mouse.scroll.ReadValue().y;
             if(mode=="observe" && held) {
                 if(mouse.leftButton.isPressed) {held.transform.Rotate(Vector3.up,-delta.x*.35f,Space.World);held.transform.Rotate(Vector3.right,delta.y*.35f,Space.World);}
@@ -139,7 +150,7 @@ public class MuseumExperience : MonoBehaviour
     }
     public void Jump(int index)
     {
-        CloseObservation();answer="";walking=false;
+        CloseObservationImmediately();answer="";walking=false;
         visitor.enabled=false; visitor.transform.position=destinations[index].position; visitor.transform.rotation=destinations[index].rotation; visitor.enabled=true;
         yaw=visitor.transform.eulerAngles.y;pitch=0;visitorCamera.transform.localRotation=Quaternion.identity;
         if(index<3) selected=index;
@@ -147,23 +158,30 @@ public class MuseumExperience : MonoBehaviour
     }
     public void Observe(int index)
     {
-        selected=index;walking=false;answer="";listOpen=false;mode="observe";zoom=1;
-        if(held) Destroy(held);
-        held=Instantiate(specimenModels[index],specimenStage);held.transform.localPosition=Vector3.zero;
-        held.transform.localRotation=Quaternion.Euler(-20,0,0);initialRotation=held.transform.localRotation;
-        specimenCamera.gameObject.SetActive(true);observations++;
+        if(specimenModels==null || index<0 || index>=specimenModels.Length) return;
+        selected=index;walking=false;answer="";listOpen=false;mode="observe";
+        PrepareHeldSpecimen(index);
+        BeginImmersion(ExhibitFocus(index));
+        observations++;
     }
-    public void Microscope()
+    public void Microscope() { Microscope(null); }
+    public void Microscope(MicroscopeStation station)
     {
-        if(!held) Observe(selected);
-        mode="scope";scopeZoom=1;scopePan=new Vector2(.5f,.5f);microscopeVisits++;
+        if(!held) { PrepareHeldSpecimen(selected); observations++; }
+        walking=false;answer="";listOpen=false;mode="scope";
+        observedMicroscope=ResolveMicroscope(station);
+        BeginImmersion(observedMicroscope?InteractionPoint(observedMicroscope):ExhibitFocus(selected));
+        scopeZoom=1;scopePan=new Vector2(.5f,.5f);microscopeVisits++;
     }
     public void CloseObservation()
     {
-        mode="walk";if(held) Destroy(held);held=null;
-        if(specimenCamera) specimenCamera.gameObject.SetActive(false);
+        mode="walk";walking=false;
+        if(!ImmersionActive) ReleaseHeldSpecimen();
     }
-    public void Talk() { walking=false;answer=descriptions[selected]; }
+    public void Talk() {
+        walking=false;answer=descriptions[selected];
+        if(guide) RecordExperience(guide.GetComponent<GuideMarker>());
+    }
     public void Ask(int index)
     {
         questions++;
@@ -205,7 +223,7 @@ public class MuseumExperience : MonoBehaviour
         visitor.transform.rotation=Quaternion.Slerp(visitor.transform.rotation,Quaternion.LookRotation(delta),Time.deltaTime*2);
         visitorCamera.transform.localRotation=Quaternion.Slerp(visitorCamera.transform.localRotation,Quaternion.identity,Time.deltaTime*2);
     }
-    public void StopTour() {touring=false;tourPaused=false;tourMoving=false;CloseObservation();answer="";walking=false;yaw=visitor.transform.eulerAngles.y;}
+    public void StopTour() {touring=false;tourPaused=false;tourMoving=false;CloseObservationImmediately();answer="";walking=false;yaw=visitor.transform.eulerAngles.y;}
     void ClampPan() {float r=.5f/scopeZoom;scopePan.x=Mathf.Clamp(scopePan.x,r,1-r);scopePan.y=Mathf.Clamp(scopePan.y,r,1-r);}
     void ResetView() {zoom=1;if(held) {held.transform.localRotation=initialRotation;held.transform.localScale=Vector3.one;}scopeZoom=1;scopePan=new Vector2(.5f,.5f);}
 
@@ -235,14 +253,8 @@ public class MuseumExperience : MonoBehaviour
         Label(1090,20,325,28,"PROTOTYPE 01  ·  ダミー展示",subtitleStyle);
         if(Button(1260,53,150,"操作ガイド",false,32)) {helpOpen=!helpOpen;walking=false;}
 
-        if(mode=="observe"||mode=="scope") {
-            GUI.DrawTexture(new Rect(0,96,1060,uiHeight-196),dark);
-            float size=Mathf.Min(810,uiHeight-235);Rect view=new Rect((1060-size)/2,112,size,size);
-            if(mode=="observe") GUI.DrawTexture(view,specimenView,ScaleMode.ScaleToFit,false);
-            else {ClampPan();float extent=1/scopeZoom;GUI.DrawTextureWithTexCoords(view,scopeTextures[selected],new Rect(scopePan.x-extent/2,scopePan.y-extent/2,extent,extent));}
-            Label(28,110,700,28,mode=="observe"?"OBSERVATION  /  左ドラッグで回転":"MICROSCOPE  /  模式図・仮倍率",subtitleStyle);
-            Label(28,uiHeight-133,950,30,mode=="observe"?"ホイールで拡大  ·  右のボタンから顕微鏡へ":"左ドラッグで観察位置を移動  ·  ホイールで拡大",subtitleStyle);
-        }
+        DrawImmersiveObservation();
+        DrawNearbyPrompt();
 
         GUI.DrawTexture(new Rect(1065,108,355,uiHeight-220),panel);
         float rx=1085;
@@ -252,6 +264,8 @@ public class MuseumExperience : MonoBehaviour
         Label(rx,287,310,110,mode=="scope"?"拡大資料：操作確認用の模式図\n実際の顕微鏡写真ではありません。": "標本の形を、いろいろな角度から。\nこの展示はダミー標本です。",bodyStyle);
         float by=410;
         if(!touring) {
+            bool controlsEnabled=GUI.enabled;
+            GUI.enabled=controlsEnabled && !ImmersionTransitioning;
             if(mode=="walk") {
                 if(Button(rx,by,310,"標本を手に取る",true)) Observe(selected);
                 if(Button(rx,by+58,310,"この展示へ移動")) Jump(selected);
@@ -265,6 +279,7 @@ public class MuseumExperience : MonoBehaviour
                 if(Button(rx,by+174,310,"標本を戻して展示室へ")) CloseObservation();
                 if(held)held.transform.localScale=Vector3.one*zoom;
             }
+            GUI.enabled=controlsEnabled;
         } else Label(rx,by,310,180,"自動見学中です。\n\n下のボタンで一時停止、次の展示への移動、自由見学への切り替えができます。",bodyStyle);
 
         if(listOpen && !touring) {
@@ -275,7 +290,7 @@ public class MuseumExperience : MonoBehaviour
         if(!touring) {
             if(Button(24,uiHeight-75,200,listOpen?"展示一覧を閉じる":"展示一覧・移動",true)) {listOpen=!listOpen;walking=false;}
             if(Button(238,uiHeight-75,200,"自動見学をはじめる")) StartTour();
-            Label(467,uiHeight-76,940,26,"移動：↑↓←→ / WASD / 床クリック　　視点：右ドラッグ　　戻る：Esc",subtitleStyle);
+            Label(467,uiHeight-76,940,26,"移動：↑↓←→ / WASD / 床クリック　　視点：右ドラッグ　　観察：E　戻る：Esc",subtitleStyle);
             Label(467,uiHeight-43,940,26,notice,subtitleStyle);
         } else {
             if(Button(24,uiHeight-75,150,tourPaused?"再開":"一時停止",true)) tourPaused=!tourPaused;

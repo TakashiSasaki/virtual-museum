@@ -11,7 +11,9 @@ Material:
   m_Shader: {fileID: 4800000, guid: 99714a66a1302d5438bca2e72b1a9ea8, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
-  m_ValidKeywords: []
+  m_ValidKeywords:
+  - _SURFACE_NORMAL
+  - _SURFACE_ROUGHNESS
   m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -23,16 +25,37 @@ Material:
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
+    - _HeightMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: b1543abdc75b78b4b94d3df1d1d080ae, type: 3}
+        m_Texture: {fileID: 2800000, guid: 4dffbcc5108dcd44fa372b8f9adc2849, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _NormalMap:
+        m_Texture: {fileID: 2800000, guid: 0272a96df41b9034189dcab39da787cb, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _RoughnessMap:
+        m_Texture: {fileID: 2800000, guid: 316337d5b759f974aa4060ee19fb249c, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _ColorUniformity: 0
     - _Metallic: 0
-    - _Relief: 0.0015
-    - _Smoothness: 0.3
-    - _Tiling: 1
+    - _NormalStrength: 0.28
+    - _ObjectCoordinates: 1
+    - _ObjectVariation: 0.035
+    - _Relief: 0
+    - _RoughnessMax: 0.67
+    - _RoughnessMin: 0.3
+    - _Smoothness: 0.39
+    - _TextureRotation: 90
+    - _TileSeamWidth: 0.0008
+    - _TileSize: 0
+    - _Tiling: 1.6666666
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []
