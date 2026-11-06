@@ -1,0 +1,20 @@
+{
+  "id": "virtual-museum",
+  "name": "愛媛大学ミュージアム バーチャル展示室",
+  "short_name": "バーチャル展示室",
+  "description": "標本を手に取り、顕微鏡をのぞき、アイモナイト君と展示を巡るバーチャル展示室。",
+  "lang": "ja",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "theme_color": "#0d1d2b",
+  "background_color": "#08131d",
+  "icons": [
+    {
+      "src": "./favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
