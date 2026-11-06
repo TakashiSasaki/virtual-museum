@@ -53,7 +53,7 @@ public partial class MuseumExperience : MonoBehaviour
         Application.runInBackground=true;
         visitorCamera.nearClipPlane=.06f;
         yaw=visitor.transform.eulerAngles.y;
-        if(!japaneseFont) japaneseFont=Font.CreateDynamicFontFromOSFont(new[]{"Yu Gothic","Meiryo","Arial"},20);
+        SetupFonts();
         scopeTextures = new Texture2D[3];
         for(int i=0;i<3;i++) scopeTextures[i]=MakeScope(i);
         specimenCamera.targetTexture=specimenView;

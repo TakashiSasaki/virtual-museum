@@ -253,6 +253,7 @@ public partial class MuseumExperience
 
     void OnDestroy()
     {
+        ReleaseFonts();
         if(microscopeVignette) Destroy(microscopeVignette);
     }
 }

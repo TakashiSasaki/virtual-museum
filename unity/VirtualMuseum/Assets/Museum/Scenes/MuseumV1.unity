@@ -7366,7 +7366,7 @@ MonoBehaviour:
   specimenCamera: {fileID: 313120547}
   specimenStage: {fileID: 192077760}
   specimenView: {fileID: 8400000, guid: 39cd7c556d519704b84fc94dc939e781, type: 2}
-  japaneseFont: {fileID: 0}
+  japaneseFont: {fileID: 12800000, guid: 313cec695c00730428cf6d254e9d5e56, type: 3}
   selected: 0
   mode: walk
   touring: 0

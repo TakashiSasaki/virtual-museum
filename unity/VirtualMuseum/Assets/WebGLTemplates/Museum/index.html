@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0d1d2b">
+  <meta name="description" content="愛媛大学ミュージアムの収蔵展示室をもとにしたバーチャル展示室。標本を手に取り、顕微鏡で観察し、アイモナイト君と展示を巡るプロトタイプです。">
+  <title>バーチャル展示室 | 愛媛大学ミュージアム</title>
+  <link rel="stylesheet" href="museum.css">
+</head>
+<body>
+  <main id="museum-app" data-state="ready">
+    <header class="masthead">
+      <a class="brand" href="./" aria-label="バーチャル展示室の入口へ">
+        <svg class="brand-mark" viewBox="0 0 48 48" aria-hidden="true"><path d="M38 32a18 18 0 1 0-26 6c7 5 17 1 19-6 3-9-6-17-13-12-5 4-2 11 3 10 3 0 4-4 1-5"/></svg>
+        <span>愛媛大学ミュージアム<small>VIRTUAL EXHIBITION ROOM</small></span>
+      </a>
+      <span class="edition">PROTOTYPE <b>01</b></span>
+    </header>
+
+    <section class="stage" aria-label="バーチャル展示室">
+      <canvas id="unity-canvas" width="{{{ WIDTH }}}" height="{{{ HEIGHT }}}" tabindex="0" aria-label="展示室。十字キーまたはWASDで移動、右ドラッグで見回します。"></canvas>
+      <div id="entry-overlay" class="entry-overlay">
+        <div class="entry-card">
+          <p class="eyebrow"><span></span> COLLECTIONS, CLOSER.</p>
+          <h1>バーチャル展示室</h1>
+          <p class="intro">収蔵庫の扉を開いて、<br>標本の世界を、すぐそばに。</p>
+          <p class="description">標本を手に取り、顕微鏡をのぞく。<br>アイモナイト君と一緒に、小さな発見を探しましょう。</p>
+          <div id="entry-actions">
+            <button id="start-button" class="primary-button" type="button">展示室に入る <span aria-hidden="true">↗</span></button>
+            <p class="device-note">PCのキーボード・マウス向け</p>
+          </div>
+          <div id="loading" hidden aria-live="polite" aria-atomic="true">
+            <div class="loading-label"><span id="loading-message">展示室を準備しています</span><span id="progress-text">0%</span></div>
+            <progress id="load-progress" max="100" value="0" aria-label="展示室の読み込み"></progress>
+            <p class="device-note">初回の読み込みには少し時間がかかります。</p>
+          </div>
+          <div id="error-panel" hidden role="alert">
+            <p id="error-message"></p>
+            <button id="retry-button" class="primary-button" type="button">もう一度読み込む <span aria-hidden="true">↻</span></button>
+          </div>
+          <p class="portrait-note">横向きの広い画面での見学をおすすめします。</p>
+          <noscript><p class="no-script">展示室の見学には、ブラウザーのJavaScriptを有効にしてください。</p></noscript>
+        </div>
+        <span class="orbit orbit-one" aria-hidden="true"></span>
+        <span class="orbit orbit-two" aria-hidden="true"></span>
+        <span class="orbit orbit-three" aria-hidden="true"></span>
+        <span class="entry-caption" aria-hidden="true">OBSERVE · EXPLORE · DISCOVER</span>
+      </div>
+    </section>
+
+    <footer class="toolbar">
+      <p class="quick-help"><kbd>WASD</kbd> / <kbd>↑↓←→</kbd> 移動 <span>·</span> 右ドラッグで見回す <span>·</span> <kbd>E</kbd> 観察 <span>·</span> <kbd>Esc</kbd> 戻る</p>
+      <div class="toolbar-actions">
+        <button id="help-button" class="text-button" type="button" aria-expanded="false" aria-controls="control-guide">操作案内</button>
+        <button id="fullscreen-button" class="text-button" type="button" disabled aria-label="展示室を全画面で表示">全画面 <span aria-hidden="true">⛶</span></button>
+      </div>
+    </footer>
+
+    <aside id="control-guide" class="control-guide" hidden aria-label="操作案内">
+      <div class="guide-heading"><h2>見学のしかた</h2><button id="close-help-button" class="text-button" type="button" aria-label="操作案内を閉じる">閉じる ×</button></div>
+      <dl>
+        <div><dt>移動する</dt><dd>十字キー・WASD、または通路の床をクリック</dd></div>
+        <div><dt>見回す</dt><dd>マウスの右ボタンを押したままドラッグ</dd></div>
+        <div><dt>標本・顕微鏡を観察</dt><dd>光るサインをクリック。近づいて対象を見るとEキーでも操作できます。</dd></div>
+        <div><dt>回転・拡大する</dt><dd>観察中に左ドラッグ・マウスホイール</dd></div>
+        <div><dt>解説を読む</dt><dd>アイモナイト君、または紫色のサインをクリック</dd></div>
+        <div><dt>すばやく巡る</dt><dd>画面左下の「展示一覧・移動」や「自動見学」を利用</dd></div>
+      </dl>
+      <p>体験した場所のサインにはチェックが付きます。再び観察することもできます。</p>
+    </aside>
+  </main>
+  <script>
+    (() => {
+      const app = document.getElementById("museum-app");
+      const canvas = document.getElementById("unity-canvas");
+      const overlay = document.getElementById("entry-overlay");
+      const entryActions = document.getElementById("entry-actions");
+      const loading = document.getElementById("loading");
+      const progressBar = document.getElementById("load-progress");
+      const progressText = document.getElementById("progress-text");
+      const errorPanel = document.getElementById("error-panel");
+      const fullscreenButton = document.getElementById("fullscreen-button");
+      const helpButton = document.getElementById("help-button");
+      const guide = document.getElementById("control-guide");
+      let started = false;
+
+      function showError(detail) {
+        console.error("Museum player:", detail);
+        app.dataset.state = "error";
+        overlay.hidden = false;
+        entryActions.hidden = true;
+        loading.hidden = true;
+        errorPanel.hidden = false;
+        document.getElementById("error-message").textContent = "展示室を読み込めませんでした。通信状況を確認して、もう一度お試しください。続く場合は、最新版のChrome・Edge・Firefoxで開いてください。";
+        fullscreenButton.disabled = true;
+      }
+
+      function showBanner(message, type) {
+        if (type === "error") showError(message);
+        else console.warn("Museum player:", message);
+      }
+
+      const buildUrl = "Build";
+      const config = {
+        arguments: [],
+#if PROGRESSIVE_ASSET_LOADING
+        primaryDataUrls: {{{ JSON.stringify(PRIMARY_DATA_FILES) }}},
+        secondaryDataUrls: {{{ JSON.stringify(SECONDARY_DATA_FILES) }}},
+#else
+        dataUrl: buildUrl + "/{{{ DATA_FILENAME }}}",
+#endif
+        frameworkUrl: buildUrl + "/{{{ FRAMEWORK_FILENAME }}}",
+#if USE_WASM
+        codeUrl: buildUrl + "/{{{ CODE_FILENAME }}}",
+#endif
+#if SYMBOLS_FILENAME
+        symbolsUrl: buildUrl + "/{{{ SYMBOLS_FILENAME }}}",
+#endif
+        streamingAssetsUrl: "StreamingAssets",
+        fullscreenElementID: "museum-app",
+        companyName: {{{ JSON.stringify(COMPANY_NAME) }}},
+        productName: {{{ JSON.stringify(PRODUCT_NAME) }}},
+        productVersion: {{{ JSON.stringify(PRODUCT_VERSION) }}},
+        devicePixelRatio: Math.min(window.devicePixelRatio || 1, 1.5),
+        showBanner,
+        errorHandler: (error) => { showError(error); return true; }
+      };
+
+      document.getElementById("start-button").addEventListener("click", () => {
+        if (started) return;
+        started = true;
+        app.dataset.state = "loading";
+        entryActions.hidden = true;
+        loading.hidden = false;
+        const loader = document.createElement("script");
+        loader.src = buildUrl + "/{{{ LOADER_FILENAME }}}";
+        loader.onerror = () => showError("The player loader could not be downloaded.");
+        loader.onload = () => {
+          createUnityInstance(canvas, config, (progress) => {
+            const percent = Math.round(Math.max(0, Math.min(1, progress)) * 100);
+            progressBar.value = percent;
+            progressText.textContent = percent + "%";
+            if (percent === 100) document.getElementById("loading-message").textContent = "展示室の扉を開いています";
+          }).then((instance) => {
+            window.unityInstance = instance;
+            if (app.dataset.state === "error") return;
+            app.dataset.state = "running";
+            overlay.hidden = true;
+            loading.hidden = true;
+            fullscreenButton.disabled = !document.fullscreenEnabled;
+            canvas.focus();
+          }).catch(showError);
+        };
+        document.body.appendChild(loader);
+      });
+
+      document.getElementById("retry-button").addEventListener("click", () => location.reload());
+      canvas.addEventListener("contextmenu", (event) => event.preventDefault());
+      canvas.addEventListener("pointerdown", () => canvas.focus());
+      // Keep movement keys inside the exhibit instead of scrolling its host page.
+      canvas.addEventListener("keydown", (event) => {
+        if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " "].includes(event.key)) event.preventDefault();
+      });
+      canvas.addEventListener("wheel", (event) => event.preventDefault(), { passive: false });
+
+      fullscreenButton.addEventListener("click", () => {
+        if (!window.unityInstance) return;
+        window.unityInstance.SetFullscreen(document.fullscreenElement ? 0 : 1);
+        canvas.focus();
+      });
+      document.addEventListener("fullscreenchange", () => {
+        fullscreenButton.textContent = document.fullscreenElement ? "全画面を終了 ⛶" : "全画面 ⛶";
+        fullscreenButton.setAttribute("aria-label", document.fullscreenElement ? "全画面表示を終了" : "展示室を全画面で表示");
+      });
+
+      function setHelp(open) {
+        guide.hidden = !open;
+        helpButton.setAttribute("aria-expanded", String(open));
+        if (open) document.getElementById("close-help-button").focus();
+        else if (app.dataset.state === "running") canvas.focus();
+        else helpButton.focus();
+      }
+      helpButton.addEventListener("click", () => setHelp(guide.hidden));
+      document.getElementById("close-help-button").addEventListener("click", () => setHelp(false));
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && !guide.hidden) setHelp(false);
+      });
+    })();
+  </script>
+</body>
+</html>
