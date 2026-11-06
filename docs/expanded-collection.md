@@ -63,6 +63,8 @@ FBXは観察時の扱いやすさを優先して最大寸法をおおむね1mに
 
 Unity側の `MuseumCollectionSetup.Apply()` は、23点の一覧、説明、顕微鏡模式図の種類を `Assets/Museum/ExpandedCollection.asset` へ保存し、拡張展示台・移動先・操作サインを設定します。**Museum → Expand Natural History Collection** はPlayを停止し、`MuseumV1.unity` を保存してから実行します。再実行すると **Expanded collection displays** 配下を作り直すので、その配下の手動調整を残す場合は先に差分を確認してください。
 
+展示台の名札は、割り当てた幅と高さに収まるよう同梱フォントの描画寸法を測って縮小します。横並びの展示では幅0.60m以内とし、大きな模型の名札は模型の手前に寄せています。**Museum → Fit Display Labels** では、模型や展示台を作り直さずに、24枚の上面ラベルと初期展示の側面英字名札3枚を調整できます。Play停止後に実行し、シーンを保存してください。
+
 ## 材質と透過
 
 モデルの色・粗さ・金属光沢は材質で表現します。飼育箱のガラスと、トンボ・ミツバチの翅膜は透明度を持つため、FBXの色だけでなくUnity側の透過設定も必要です。`MuseumCollectionSetup` は材質を `Assets/Museum/Materials/Collections/` に作成してFBXへ対応付け、透明材質の描画順・ブレンド・深度書き込みを設定します。

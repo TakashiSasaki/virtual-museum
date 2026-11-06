@@ -220,7 +220,7 @@ Transform:
   m_GameObject: {fileID: 12183412}
   serializedVersion: 2
   m_LocalRotation: {x: 0.57357645, y: -0, z: -0, w: 0.81915206}
-  m_LocalPosition: {x: 3.25, y: 1.115, z: 3.76}
+  m_LocalPosition: {x: 3.25, y: 1.115, z: 3.54}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -236,7 +236,7 @@ TextMesh:
   m_GameObject: {fileID: 12183412}
   m_Text: "01  \u30B3\u30AC\u30CD\u30E0\u30B7\u306E\u4EF2\u9593"
   m_OffsetZ: 0
-  m_CharacterSize: 0.026
+  m_CharacterSize: 0.008093059
   m_LineSpacing: 1
   m_Anchor: 4
   m_Alignment: 0
@@ -505,7 +505,7 @@ Transform:
   m_GameObject: {fileID: 19966677}
   serializedVersion: 2
   m_LocalRotation: {x: 0.57357645, y: -0, z: -0, w: 0.81915206}
-  m_LocalPosition: {x: -2.1, y: 1.115, z: 9.26}
+  m_LocalPosition: {x: -2.1, y: 1.115, z: 9.04}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -521,7 +521,7 @@ TextMesh:
   m_GameObject: {fileID: 19966677}
   m_Text: "20  \u4E2D\u304C\u898B\u3048\u308B\u98FC\u80B2\u7BB1"
   m_OffsetZ: 0
-  m_CharacterSize: 0.026
+  m_CharacterSize: 0.008093059
   m_LineSpacing: 1
   m_Anchor: 4
   m_Alignment: 0
@@ -1040,7 +1040,7 @@ TextMesh:
   m_GameObject: {fileID: 55927358}
   m_Text: "13  \u30BE\u30A6\u30EA\u30E0\u30B7\u306E\u62E1\u5927\u6A21\u578B"
   m_OffsetZ: 0
-  m_CharacterSize: 0.026
+  m_CharacterSize: 0.008093059
   m_LineSpacing: 1
   m_Anchor: 4
   m_Alignment: 0
@@ -1317,7 +1317,7 @@ TextMesh:
   m_GameObject: {fileID: 74109852}
   m_Text: "15  \u73EA\u85FB\u306E\u62E1\u5927\u6A21\u578B"
   m_OffsetZ: 0
-  m_CharacterSize: 0.026
+  m_CharacterSize: 0.008093059
   m_LineSpacing: 1
   m_Anchor: 4
   m_Alignment: 0
@@ -1578,7 +1578,7 @@ Transform:
   m_GameObject: {fileID: 112839437}
   serializedVersion: 2
   m_LocalRotation: {x: 0.57357645, y: -0, z: -0, w: 0.81915206}
-  m_LocalPosition: {x: 2.8899999, y: 1.115, z: 11.860001}
+  m_LocalPosition: {x: 2.8899999, y: 1.115, z: 11.690001}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1594,7 +1594,7 @@ TextMesh:
   m_GameObject: {fileID: 112839437}
   m_Text: "16  \u6C34\u6676\u306E\u7D50\u6676\u7FA4"
   m_OffsetZ: 0
-  m_CharacterSize: 0.026
+  m_CharacterSize: 0.008093059
   m_LineSpacing: 1
   m_Anchor: 4
   m_Alignment: 0
@@ -2716,7 +2716,7 @@ TextMesh:
   m_GameObject: {fileID: 284295167}
   m_Text: 03  AMMONITE
   m_OffsetZ: 0
-  m_CharacterSize: 0.022
+  m_CharacterSize: 0.015664335
   m_LineSpacing: 1
   m_Anchor: 4
   m_Alignment: 1
@@ -4262,7 +4262,7 @@ TextMesh:
   m_GameObject: {fileID: 406510253}
   m_Text: "04  \u30AF\u30EF\u30AC\u30BF\u30E0\u30B7\u306E\u4EF2\u9593"
   m_OffsetZ: 0
-  m_CharacterSize: 0.026
+  m_CharacterSize: 0.008093059
   m_LineSpacing: 1
   m_Anchor: 4
   m_Alignment: 0
@@ -4568,7 +4568,7 @@ TextMesh:
   m_GameObject: {fileID: 459761313}
   m_Text: 02  BUTTERFLY
   m_OffsetZ: 0
-  m_CharacterSize: 0.022
+  m_CharacterSize: 0.015664335
   m_LineSpacing: 1
   m_Anchor: 4
   m_Alignment: 1
@@ -4687,7 +4687,7 @@ TextMesh:
   m_GameObject: {fileID: 466474808}
   m_Text: "06  \u30DF\u30C4\u30D0\u30C1\u306E\u4EF2\u9593"
   m_OffsetZ: 0
-  m_CharacterSize: 0.026
+  m_CharacterSize: 0.008093059
   m_LineSpacing: 1
   m_Anchor: 4
   m_Alignment: 0
@@ -6465,7 +6465,7 @@ TextMesh:
   m_GameObject: {fileID: 730035424}
   m_Text: "08  \u30B2\u30F3\u30B4\u30ED\u30A6\u306E\u4EF2\u9593"
   m_OffsetZ: 0
-  m_CharacterSize: 0.026
+  m_CharacterSize: 0.008093059
   m_LineSpacing: 1
   m_Anchor: 4
   m_Alignment: 0
@@ -7259,7 +7259,7 @@ TextMesh:
   m_GameObject: {fileID: 828818211}
   m_Text: "14  \u30DF\u30C9\u30EA\u30E0\u30B7\u306E\u62E1\u5927\u6A21\u578B"
   m_OffsetZ: 0
-  m_CharacterSize: 0.026
+  m_CharacterSize: 0.008093059
   m_LineSpacing: 1
   m_Anchor: 4
   m_Alignment: 0
@@ -7363,7 +7363,7 @@ TextMesh:
   m_GameObject: {fileID: 852830614}
   m_Text: "07  \u30AB\u30DE\u30AD\u30EA\u306E\u4EF2\u9593"
   m_OffsetZ: 0
-  m_CharacterSize: 0.026
+  m_CharacterSize: 0.008093059
   m_LineSpacing: 1
   m_Anchor: 4
   m_Alignment: 0
@@ -7673,7 +7673,7 @@ TextMesh:
   m_GameObject: {fileID: 884918300}
   m_Text: "\u30B4\u30AD\u30D6\u30EA\u76EE / \u30B4\u30AD\u30D6\u30EA\u3068\u30B7\u30ED\u30A2\u30EA"
   m_OffsetZ: 0
-  m_CharacterSize: 0.026
+  m_CharacterSize: 0.009172133
   m_LineSpacing: 1
   m_Anchor: 4
   m_Alignment: 0
@@ -8340,7 +8340,7 @@ TextMesh:
   m_GameObject: {fileID: 975053110}
   m_Text: "21  \u30AF\u30E2\u306E\u4F53\u306E\u3064\u304F\u308A"
   m_OffsetZ: 0
-  m_CharacterSize: 0.026
+  m_CharacterSize: 0.008093059
   m_LineSpacing: 1
   m_Anchor: 4
   m_Alignment: 0
@@ -10029,7 +10029,7 @@ TextMesh:
   m_GameObject: {fileID: 1147921929}
   m_Text: "11  \u30C8\u30D3\u30B1\u30E9\u306E\u5E7C\u866B"
   m_OffsetZ: 0
-  m_CharacterSize: 0.026
+  m_CharacterSize: 0.008093059
   m_LineSpacing: 1
   m_Anchor: 4
   m_Alignment: 0
@@ -10393,7 +10393,7 @@ TextMesh:
   m_GameObject: {fileID: 1170121332}
   m_Text: "05  \u30C8\u30F3\u30DC\u306E\u6210\u866B"
   m_OffsetZ: 0
-  m_CharacterSize: 0.026
+  m_CharacterSize: 0.008093059
   m_LineSpacing: 1
   m_Anchor: 4
   m_Alignment: 0
@@ -10930,7 +10930,7 @@ Transform:
   m_GameObject: {fileID: 1224943497}
   serializedVersion: 2
   m_LocalRotation: {x: 0.57357645, y: -0, z: -0, w: 0.81915206}
-  m_LocalPosition: {x: -2.4699998, y: 1.115, z: 11.56}
+  m_LocalPosition: {x: -2.4699998, y: 1.115, z: 11.39}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -10946,7 +10946,7 @@ TextMesh:
   m_GameObject: {fileID: 1224943497}
   m_Text: "18  \u30AB\u30EF\u30BB\u30DF\u306E\u5265\u88FD\u578B\u6A21\u578B"
   m_OffsetZ: 0
-  m_CharacterSize: 0.026
+  m_CharacterSize: 0.008093059
   m_LineSpacing: 1
   m_Anchor: 4
   m_Alignment: 0
@@ -11264,7 +11264,7 @@ Transform:
   m_GameObject: {fileID: 1246014701}
   serializedVersion: 2
   m_LocalRotation: {x: 0.57357645, y: -0, z: -0, w: 0.81915206}
-  m_LocalPosition: {x: -0.4, y: 1.115, z: 11.46}
+  m_LocalPosition: {x: -0.4, y: 1.115, z: 11.309999}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -11280,7 +11280,7 @@ TextMesh:
   m_GameObject: {fileID: 1246014701}
   m_Text: "22  \u30B4\u30AD\u30D6\u30EA\u306E\u4EF2\u9593"
   m_OffsetZ: 0
-  m_CharacterSize: 0.026
+  m_CharacterSize: 0.008093059
   m_LineSpacing: 1
   m_Anchor: 4
   m_Alignment: 0
@@ -11949,7 +11949,7 @@ TextMesh:
   m_GameObject: {fileID: 1320888155}
   m_Text: "09  \u30BF\u30A4\u30B3\u30A6\u30C1\u306E\u4EF2\u9593"
   m_OffsetZ: 0
-  m_CharacterSize: 0.026
+  m_CharacterSize: 0.008093059
   m_LineSpacing: 1
   m_Anchor: 4
   m_Alignment: 0
@@ -12583,7 +12583,7 @@ Transform:
   m_GameObject: {fileID: 1385331392}
   serializedVersion: 2
   m_LocalRotation: {x: 0.57357645, y: -0, z: -0, w: 0.81915206}
-  m_LocalPosition: {x: 3.6100001, y: 1.115, z: 11.860001}
+  m_LocalPosition: {x: 3.6100001, y: 1.115, z: 11.690001}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -12599,7 +12599,7 @@ TextMesh:
   m_GameObject: {fileID: 1385331392}
   m_Text: "17  \u9EC4\u9244\u9271\u306E\u7D50\u6676\u7FA4"
   m_OffsetZ: 0
-  m_CharacterSize: 0.026
+  m_CharacterSize: 0.008093059
   m_LineSpacing: 1
   m_Anchor: 4
   m_Alignment: 0
@@ -13700,7 +13700,7 @@ Transform:
   m_GameObject: {fileID: 1448925443}
   serializedVersion: 2
   m_LocalRotation: {x: 0.57357645, y: -0, z: -0, w: 0.81915206}
-  m_LocalPosition: {x: 0.4, y: 1.115, z: 11.46}
+  m_LocalPosition: {x: 0.4, y: 1.115, z: 11.309999}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -13716,7 +13716,7 @@ TextMesh:
   m_GameObject: {fileID: 1448925443}
   m_Text: "23  \u30B7\u30ED\u30A2\u30EA\u306E\u4EF2\u9593"
   m_OffsetZ: 0
-  m_CharacterSize: 0.026
+  m_CharacterSize: 0.008093059
   m_LineSpacing: 1
   m_Anchor: 4
   m_Alignment: 0
@@ -14021,7 +14021,7 @@ TextMesh:
   m_GameObject: {fileID: 1470805475}
   m_Text: 01  BEETLE
   m_OffsetZ: 0
-  m_CharacterSize: 0.022
+  m_CharacterSize: 0.015664335
   m_LineSpacing: 1
   m_Anchor: 4
   m_Alignment: 1
@@ -15526,7 +15526,7 @@ TextMesh:
   m_GameObject: {fileID: 1729531993}
   m_Text: "12  \u30A4\u30E2\u30E0\u30B7\u306E\u4F53\u306E\u3064\u304F\u308A"
   m_OffsetZ: 0
-  m_CharacterSize: 0.026
+  m_CharacterSize: 0.008093059
   m_LineSpacing: 1
   m_Anchor: 4
   m_Alignment: 0
@@ -16246,7 +16246,7 @@ TextMesh:
   m_GameObject: {fileID: 1805960866}
   m_Text: "10  \u30C8\u30F3\u30DC\u306E\u5E7C\u866B\u30FB\u30E4\u30B4"
   m_OffsetZ: 0
-  m_CharacterSize: 0.026
+  m_CharacterSize: 0.008093059
   m_LineSpacing: 1
   m_Anchor: 4
   m_Alignment: 0
@@ -17036,7 +17036,7 @@ Transform:
   m_GameObject: {fileID: 1897457491}
   serializedVersion: 2
   m_LocalRotation: {x: 0.57357645, y: -0, z: -0, w: 0.81915206}
-  m_LocalPosition: {x: -1.7299999, y: 1.115, z: 11.56}
+  m_LocalPosition: {x: -1.7299999, y: 1.115, z: 11.39}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -17052,7 +17052,7 @@ TextMesh:
   m_GameObject: {fileID: 1897457491}
   m_Text: "19  \u30EA\u30B9\u306E\u5265\u88FD\u578B\u6A21\u578B"
   m_OffsetZ: 0
-  m_CharacterSize: 0.026
+  m_CharacterSize: 0.008093059
   m_LineSpacing: 1
   m_Anchor: 4
   m_Alignment: 0
@@ -18428,7 +18428,7 @@ Transform:
   m_GameObject: {fileID: 2037967918}
   serializedVersion: 2
   m_LocalRotation: {x: 0.57357645, y: -0, z: -0, w: 0.81915206}
-  m_LocalPosition: {x: 3.25, y: 1.115, z: 9.76}
+  m_LocalPosition: {x: 3.25, y: 1.115, z: 9.54}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -18444,7 +18444,7 @@ TextMesh:
   m_GameObject: {fileID: 2037967918}
   m_Text: "03  \u30A2\u30F3\u30E2\u30CA\u30A4\u30C8\u306E\u5316\u77F3"
   m_OffsetZ: 0
-  m_CharacterSize: 0.026
+  m_CharacterSize: 0.008093059
   m_LineSpacing: 1
   m_Anchor: 4
   m_Alignment: 0
@@ -19212,7 +19212,7 @@ Transform:
   m_GameObject: {fileID: 2078870976}
   serializedVersion: 2
   m_LocalRotation: {x: 0.57357645, y: -0, z: -0, w: 0.81915206}
-  m_LocalPosition: {x: 3.25, y: 1.115, z: 6.76}
+  m_LocalPosition: {x: 3.25, y: 1.115, z: 6.54}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -19228,7 +19228,7 @@ TextMesh:
   m_GameObject: {fileID: 2078870976}
   m_Text: "02  \u30A2\u30B2\u30CF\u30C1\u30E7\u30A6\u306E\u4EF2\u9593"
   m_OffsetZ: 0
-  m_CharacterSize: 0.026
+  m_CharacterSize: 0.008093059
   m_LineSpacing: 1
   m_Anchor: 4
   m_Alignment: 0

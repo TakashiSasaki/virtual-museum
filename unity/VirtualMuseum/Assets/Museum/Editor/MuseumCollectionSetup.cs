@@ -75,7 +75,7 @@ public static class MuseumCollectionSetup
         Plinth(root.transform,new Vector3(-2.1f,0,11.8f),new Vector3(1.5f,1,1.1f),ivory,wood,paper);
         Plinth(root.transform,new Vector3(-2.1f,0,9.5f),new Vector3(1.45f,1,1.1f),ivory,wood,paper);
         Plinth(root.transform,new Vector3(0,0,11.7f),new Vector3(1.65f,1,1.1f),ivory,wood,paper);
-        Label(root.transform,"ゴキブリ目 / ゴキブリとシロアリ",new Vector3(0,1.12f,11.2f),.026f);
+        Label(root.transform,"ゴキブリ目 / ゴキブリとシロアリ",new Vector3(0,1.12f,11.2f),new Vector2(1.4f,.085f));
         for(int i=0;i<entries.Length;i++)
         {
             Vector3 location;float size;
@@ -101,8 +101,9 @@ public static class MuseumCollectionSetup
             int displayGroup=i<3?100+i:i<=6||i==20?1:i<=10?2:i<=14?3:i<=16?4:i<=18?5:i==19?6:7;
             string title=entries[i].title.Replace("の仲間","").Replace("の体のつくり","").Replace("の拡大模型","").Replace("の剥製型模型","");
             landmarks.Add(new MuseumWayfinding.Landmark {anchor=anchor,target=exhibit,kind=MuseumWayfinding.Kind.Specimen,title=title,badgeHeight=1.65f,displayGroup=displayGroup});
-            Label(root.transform,(i+1).ToString("00")+"  "+entries[i].title,new Vector3(location.x,1.115f,location.z-.24f),.026f);
+            Label(root.transform,(i+1).ToString("00")+"  "+entries[i].title,new Vector3(location.x,1.115f,location.z-LabelOffset(i)),LabelArea(i));
         }
+        FitLegacyPlinthLabels();
         Undo.RecordObject(app,"Expand collection destinations");app.collection=data;app.specimenModels=entries.Select(e=>e.model).ToArray();app.destinations=destinations;
         Undo.RecordObject(wayfinding,"Expand collection wayfinding");wayfinding.landmarks=landmarks.ToArray();
         EditorUtility.SetDirty(app);EditorUtility.SetDirty(wayfinding);AssetDatabase.SaveAssets();
@@ -115,11 +116,67 @@ public static class MuseumCollectionSetup
     {var o=GameObject.CreatePrimitive(PrimitiveType.Cube);o.name=name;o.transform.SetParent(parent,false);o.transform.localPosition=position;o.transform.localScale=size;o.GetComponent<Renderer>().sharedMaterial=material;}
     static void Plinth(Transform parent,Vector3 position,Vector3 size,Material ivory,Material wood,Material paper)
     {Box(parent,"Collection plinth",position+Vector3.up*.5f,size,ivory);Box(parent,"Collection tray",position+Vector3.up*1.035f,new Vector3(size.x,.07f,size.z),wood);Box(parent,"Collection lining",position+Vector3.up*1.078f,new Vector3(size.x-.10f,.025f,size.z-.10f),paper);}
-    static void Label(Transform parent,string value,Vector3 position,float size)
+    // Tabletop labels share a finite cell with a specimen. Measure the bundled
+    // font instead of assuming that characterSize is the width of one glyph.
+    static Vector2 LabelArea(int index) => new Vector2(index<3 || index==19 || index==20?1.05f:.60f,.075f);
+    static float LabelOffset(int index) => index<3 || index==19?.46f:index>=21?.39f:index>=15 && index<=18?.41f:.24f;
+
+    [MenuItem("Museum/Fit Display Labels")]
+    public static void FitDisplayLabels()
+    {
+        if(EditorApplication.isPlayingOrWillChangePlaymode)throw new InvalidOperationException("Stop Play before fitting labels.");
+        var scene=SceneManager.GetActiveScene();
+        if(scene.path!=MuseumWebBuild.ScenePath)throw new InvalidOperationException("Open MuseumV1 first.");
+        var root=GameObject.Find("Expanded collection displays");
+        if(!root)throw new InvalidOperationException("The expanded collection is not present.");
+        var exhibits=root.GetComponentsInChildren<MuseumExhibit>();
+        foreach(var text in root.GetComponentsInChildren<TextMesh>())
+        {
+            bool numbered=text.text.Length>=4 && text.text.Substring(2,2)=="  " && int.TryParse(text.text.Substring(0,2),out _);
+            int index=numbered?int.Parse(text.text.Substring(0,2))-1:-1;
+            var area=numbered?LabelArea(index):new Vector2(1.4f,.085f);
+            FitLabel(text,area);
+            var exhibit=numbered?exhibits.FirstOrDefault(e=>e.index==index):null;
+            if(exhibit)
+            {
+                Undo.RecordObject(text.transform,"Position display label");
+                var position=text.transform.position;
+                position.z=exhibit.transform.position.z-LabelOffset(index);
+                text.transform.position=position;
+            }
+        }
+        FitLegacyPlinthLabels();
+        EditorSceneManager.MarkSceneDirty(scene);
+        Debug.Log("Fitted 24 collection labels and 3 legacy plinth labels to their display areas.");
+    }
+
+    static void FitLegacyPlinthLabels()
+    {
+        foreach(var name in new[]{"Sign 01  BEETLE","Sign 02  BUTTERFLY","Sign 03  AMMONITE"})
+        {
+            var label=GameObject.Find(name)?.GetComponent<TextMesh>();
+            if(label)FitLabel(label,new Vector2(1f,.14f));
+        }
+    }
+
+    static void FitLabel(TextMesh text,Vector2 area)
+    {
+        Undo.RecordObject(text,"Fit display label");
+        text.font.RequestCharactersInTexture(text.text,text.fontSize,text.fontStyle);
+        var size=text.GetComponent<Renderer>().localBounds.size;
+        var scale=text.transform.lossyScale;
+        float width=size.x*Mathf.Abs(scale.x),height=size.y*Mathf.Abs(scale.y);
+        if(width<=0 || height<=0)throw new InvalidOperationException("Cannot measure label: "+text.text);
+        text.characterSize*=Mathf.Min(1f,area.x/width,area.y/height);
+        EditorUtility.SetDirty(text);
+    }
+
+    static void Label(Transform parent,string value,Vector3 position,Vector2 area)
     {
         var o=new GameObject(value);o.transform.SetParent(parent,false);o.transform.position=position;o.transform.rotation=Quaternion.Euler(70,0,0);
-        var t=o.AddComponent<TextMesh>();t.text=value;t.fontSize=64;t.characterSize=size;t.anchor=TextAnchor.MiddleCenter;t.color=new Color(.08f,.19f,.17f);
+        var t=o.AddComponent<TextMesh>();t.text=value;t.fontSize=64;t.characterSize=.026f;t.anchor=TextAnchor.MiddleCenter;t.color=new Color(.08f,.19f,.17f);
         t.font=Resources.Load<Font>("MuseumFonts/NotoSansJP-Regular");o.GetComponent<Renderer>().sharedMaterial=AssetDatabase.LoadAssetAtPath<Material>("Assets/Museum/Materials/World lettering.mat");
+        FitLabel(t,area);
     }
     static void ImportMaterials(string path)
     {
