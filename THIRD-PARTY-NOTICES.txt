@@ -1,0 +1,7 @@
+Noto Sans JP: SIL Open Font License 1.1. See FONT-LICENSE.txt.
+https://github.com/notofonts/noto-cjk
+
+Surface photographs (CC0):
+Fine Grained Wood / Rob Tuytel: https://polyhaven.com/a/fine_grained_wood
+White Plaster 02: https://polyhaven.com/a/white_plaster_02
+Carpet016: https://ambientcg.com/view?id=Carpet016
