@@ -133,3 +133,11 @@
 - 起動画面には操作案内・読み込み進捗・再試行を用意し、同じページ内で3D展示室へ移行する。装飾が不要なスクロールバーを生じる問題を修正した。
 - 配信用の `gh-pages` は制作側の `main` と別に管理する。更新手順と第三者素材のライセンスを [Web公開手順](web-publication.md) に記録。公開スクリプトはPowerShellの構文検査を通過し、生成物の対象・サイズ・送信先・履歴を検査する。
 - Windows単体ビルド、モバイル操作、Safari、Firefoxは未検証。ブラウザー間・低性能端末の性能保証は行っていない。
+
+### 公開結果
+
+- 制作側 `4108839` から配信用 `ce478776` を作成し、`work/publish_webgl.ps1` で `gh-pages` へ送信。送信後のコミットID一致を確認した。
+- GitHub Pagesは `gh-pages` のルートから配信し、HTTPS強制を確認。[Pagesのデプロイ](https://github.com/TakashiSasaki/virtual-museum/actions/runs/42209124813)は成功した。初回設定APIは409を返したため再取得したところ、すでに目的の配信設定と正常なデプロイが存在することを確認した。
+- [公開URL](https://takashisasaki.github.io/virtual-museum/)の入口から起動し、3D展示室、日本語UI、巡回するアイモナイト君、誘導サインを確認。公開URLでのブラウザーコンソールもエラー・警告0件。
+- 配信中の `publication.json` が制作側コミットと一致し、HTML、CSS、フォントのライセンス、第三者素材表記、WasmとデータファイルのHTTP 200を確認した。配信ファイルにContent-Encodingが付かない環境でDecompression Fallbackによる起動が成功した。
+- ローカル確認では追加で、十字キーによる移動、アイモナイト君の固定解説、選択式FAQの回答表示を確認した。
