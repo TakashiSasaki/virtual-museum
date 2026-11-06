@@ -25,6 +25,7 @@
 - [什器追加後の作業台](outputs/v1/06_lab_furniture.png)・[回転椅子と丸椅子](blender/previews/lab_seating.png)・[追加収納家具](blender/previews/lab_storage.png)
 - [操作場所を示す光るサイン](outputs/v1/10_interaction_wayfinding.png)・[近づいたときの操作案内](outputs/v1/11_wayfinding_ready.png)
 - [体験済みに変化したサイン](outputs/v1/12_experienced_wayfinding.png)
+- [提供された参考画像11点](references/README.md) — 展示室・顕微鏡の写真、アイモナイト君の造形資料。
 
 ## 以前の展示室構想（保持）
 
@@ -50,6 +51,8 @@ Blenderファイルには参考写真の一部が埋め込まれています。�
 
 - `outputs/` — 上記の展示室と共有アセット。リンクされた `.blend` の相対配置を維持してください。
 - `work/` — 展示室の制作・確認用スクリプト。
+- `references/` — 提供された参考画像の一覧と、展示室・初期構想の資料8点。
+- `.codex-remote-attachments/` — アイモナイト君の追加添付画像3点。元の添付パスを保持。
 - `blender/scenes/` — 初期のギャラリーとサッカーボールの Blender 編集用ファイル。
 - `blender/previews/` — 初期作品のレンダリング画像。
 - `unity/VirtualMuseum/` — バージョン1のUnityプロジェクト。起動方法は `unity/README.md` を参照。
