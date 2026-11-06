@@ -7,7 +7,7 @@ UnityのWebGLビルドを、このリポジトリの `gh-pages` ブランチか�
 1. Unity **6000.6.8f1** の **Web Build Support** をUnity Hubで追加しておきます。
 2. `unity/VirtualMuseum/` をEditorで開き、Playを停止し、編集したシーンを保存します。
 3. **Museum → Web → Build GitHub Pages** を実行します。
-4. 成功すると `unity/VirtualMuseum/Build/WebGL/` に `index.html`、`museum-sw.js`、`Build/` とライセンス表記を生成します。
+4. 成功すると `unity/VirtualMuseum/Build/WebGL/` に `index.html`、`museum-sw.js`、`manifest.webmanifest`、`favicon.svg`、`Build/` とライセンス表記を生成します。
 
 このメニューは `MuseumWebBuild.Configure()` で設定してから `MuseumV1.unity` をビルドし、最後に `FinalizeOutput()` で `.nojekyll` と第三者素材・フォントのライセンス表記を付けます。手動で同じ設定を適用するメニューは **Museum → Web → Configure GitHub Pages** です。`Build/` はGitの追跡対象外です。
 
@@ -20,6 +20,10 @@ UnityのWebGLビルドを、このリポジトリの `gh-pages` ブランチか�
 導入済みCLIでは `unity build run unity/VirtualMuseum --build-path unity/VirtualMuseum/Build/WebGL` でローカル確認用のサーバーを起動できます。確認終了後は、そのコマンドをCtrl+Cで停止します。
 
 現在の操作対象はPCのマウス・キーボードです。モバイル向けタッチ操作は用意していません。ブラウザーの全画面中はEscがブラウザー側に使われる場合があるため、観察から戻るときは画面内のボタンも使えます。
+
+## マニフェストとファビコン
+
+`Assets/WebGLTemplates/Museum/` の `manifest.webmanifest` と `favicon.svg` をWebビルドに同梱します。入口とスコープはマニフェストと同じディレクトリを指定し、アプリアイコンにもSVGを使います。配信ファイル一式を独立ドメインのルートに置いた場合も、これらの相対パスをそのまま使えます。
 
 ## 同じドメインのサービスワーカー
 

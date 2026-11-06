@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <title>アンモナイトの紋章</title>
+  <defs>
+    <linearGradient id="tile" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#234755"/>
+      <stop offset=".55" stop-color="#112b39"/>
+      <stop offset="1" stop-color="#08131d"/>
+    </linearGradient>
+    <linearGradient id="shell" x1=".15" y1="0" x2=".85" y2="1">
+      <stop stop-color="#76d4be"/>
+      <stop offset=".44" stop-color="#3b8e8d"/>
+      <stop offset="1" stop-color="#164354"/>
+    </linearGradient>
+    <linearGradient id="brass" x1=".2" y1="0" x2=".82" y2="1">
+      <stop stop-color="#fff0b8"/>
+      <stop offset=".56" stop-color="#f3cd86"/>
+      <stop offset="1" stop-color="#df9a55"/>
+    </linearGradient>
+    <path id="spiral" d="M51 41.8C53 35.9 52.4 29.7 50 25S43.4 17 39.1 15.7 30.4 15 27.1 16.9 21.5 21.7 20.7 24.8 20.3 31.1 21.7 33.4 25.3 37.3 27.6 37.9 32.1 38 33.7 36.9 36.4 34.3 36.8 32.6 36.7 29.4 36 28.3 34 26.4 32.8 26.2 30.5 26.2 29.7 26.8"/>
+  </defs>
+  <rect x="1" y="1" width="62" height="62" rx="14" fill="url(#tile)" stroke="#426473" stroke-width="1.5"/>
+  <path d="M52.5 24.5c2.8 5.1 4.4 10.5 4.2 15.5l-5.9 7C43.9 55.6 31.4 58.1 21.6 52.9 10.5 47.4 6.1 36.4 9.2 25.9 12.6 14.5 24.1 8.5 34.3 10.2 42.4 11.5 48.7 16.5 52.5 24.5Z" fill="url(#shell)" stroke="#7cc9bc" stroke-width="1"/>
+  <path d="M15 18q3.7 2.2 6.5 6.3M9.1 31.5q5.3-2.3 10.6-1.7M13.7 44.3q4.4-4.8 10-6.5M24 53.7q1.3-7.9 4.8-14.8M37 54.5q-.9-8.4-4.4-15.9M47.3 50.1q-2.7-7.3-9.1-12.9" fill="none" stroke="#a6e4d4" stroke-opacity=".57" stroke-width="1.5" stroke-linecap="round"/>
+  <g fill="none" stroke-linecap="round">
+    <use href="#spiral" stroke="#112b37" stroke-width="7"/>
+    <use href="#spiral" stroke="url(#brass)" stroke-width="4.2"/>
+    <path d="m56.1 40.6-5.1 6" stroke="#efc777" stroke-width="2.1"/>
+  </g>
+</svg>
