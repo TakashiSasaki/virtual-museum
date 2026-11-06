@@ -38,7 +38,7 @@ function Assert-WorkspacePath([string]$Path) {
 }
 
 function Test-PublicationPath([string]$Path) {
-    if ($Path -in @('index.html', 'museum.css', '.nojekyll', 'FONT-LICENSE.txt',
+    if ($Path -in @('index.html', 'museum.css', 'museum-sw.js', '.nojekyll', 'FONT-LICENSE.txt',
         'THIRD-PARTY-NOTICES.txt', 'publication.json')) { return $true }
     if ($Path -cmatch '^Build/[A-Za-z0-9_.-]+\.(data|wasm|js)(\.unityweb|\.gz|\.br)?$') { return $true }
     return $Path -cmatch '^TemplateData/[A-Za-z0-9_./-]+\.(css|js|png|ico|svg|webp|jpg|jpeg|woff|woff2)$'
@@ -75,7 +75,7 @@ if (@(Invoke-Git @('-C', $repoRoot, 'status', '--porcelain=v1', '--untracked-fil
 
 $files = @(Get-BuildFiles)
 if (!$files.Count) { throw 'The Web build directory is empty.' }
-foreach ($required in @('index.html', 'FONT-LICENSE.txt', 'THIRD-PARTY-NOTICES.txt')) {
+foreach ($required in @('index.html', 'museum-sw.js', 'FONT-LICENSE.txt', 'THIRD-PARTY-NOTICES.txt')) {
     if ($required -notin $files.Relative) { throw "Required publication file is missing: $required. Run MuseumWebBuild.FinalizeOutput()." }
 }
 foreach ($pattern in @('^Build/.+\.wasm(\.unityweb|\.gz|\.br)?$', '^Build/.+\.data(\.unityweb|\.gz|\.br)?$',

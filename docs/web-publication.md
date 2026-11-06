@@ -7,7 +7,7 @@ UnityのWebGLビルドを、このリポジトリの `gh-pages` ブランチか�
 1. Unity **6000.6.8f1** の **Web Build Support** をUnity Hubで追加しておきます。
 2. `unity/VirtualMuseum/` をEditorで開き、Playを停止し、編集したシーンを保存します。
 3. **Museum → Web → Build GitHub Pages** を実行します。
-4. 成功すると `unity/VirtualMuseum/Build/WebGL/` に `index.html`、`Build/` とライセンス表記を生成します。
+4. 成功すると `unity/VirtualMuseum/Build/WebGL/` に `index.html`、`museum-sw.js`、`Build/` とライセンス表記を生成します。
 
 このメニューは `MuseumWebBuild.Configure()` で設定してから `MuseumV1.unity` をビルドし、最後に `FinalizeOutput()` で `.nojekyll` と第三者素材・フォントのライセンス表記を付けます。手動で同じ設定を適用するメニューは **Museum → Web → Configure GitHub Pages** です。`Build/` はGitの追跡対象外です。
 
@@ -20,6 +20,12 @@ UnityのWebGLビルドを、このリポジトリの `gh-pages` ブランチか�
 導入済みCLIでは `unity build run unity/VirtualMuseum --build-path unity/VirtualMuseum/Build/WebGL` でローカル確認用のサーバーを起動できます。確認終了後は、そのコマンドをCtrl+Cで停止します。
 
 現在の操作対象はPCのマウス・キーボードです。モバイル向けタッチ操作は用意していません。ブラウザーの全画面中はEscがブラウザー側に使われる場合があるため、観察から戻るときは画面内のボタンも使えます。
+
+## 同じドメインのサービスワーカー
+
+展示室は `museum-sw.js` をページと同じディレクトリから登録します。公開先でのスコープは `/virtual-museum/` です。展示室専用ワーカーはリクエストに応答せず、ブラウザー標準の通信とキャッシュに任せます。
+
+初回アクセスで展示室のHTMLに届くよう、ドメイン直下のサイトでは Workbox の `navigateFallbackDenylist` に `/virtual-museum/` を含めます。ルート側のワーカーが有効なブラウザーから展示室を開き、開発者ツールで展示室のコントローラーが `/virtual-museum/museum-sw.js` になったことを確認します。
 
 ## 配信用ブランチに送る
 
