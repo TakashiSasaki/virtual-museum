@@ -1,6 +1,6 @@
 # バーチャル展示室
 
-[Web版を開く](https://TakashiSasaki.github.io/virtual-museum/) — 「展示室に入る」から、同じページ内で見学できます。PCのキーボード・マウス向けです。[Web版のビルド・更新・公開手順](docs/web-publication.md)。
+[Web版を開く](https://TakashiSasaki.github.io/virtual-museum/) — 「展示室に入る」から、同じページ内で見学できます。キーボード・マウス操作に加え、スマートフォン向けのタッチ操作と縦長画面のUIを用意しています。スマートフォン実機での動作・性能は未検証です。[Web版のビルド・更新・公開手順](docs/web-publication.md)。
 
 ## バージョン1：操作できる1部屋のプロトタイプ
 

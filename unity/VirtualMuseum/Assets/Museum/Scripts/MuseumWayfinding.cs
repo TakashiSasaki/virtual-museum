@@ -34,7 +34,7 @@ public sealed class MuseumWayfinding : MonoBehaviour
         public TextMesh title, action;
         public Color accent;
         public float focus;
-        public bool ready, experienced;
+        public bool ready, experienced, touch;
     }
 
     static readonly int Tint = Shader.PropertyToID("_Color");
@@ -171,10 +171,12 @@ public sealed class MuseumWayfinding : MonoBehaviour
             bool experienced = experience.HasExperienced(view.landmark.target);
             bool experienceChanged = view.experienced != experienced;
             if (experienceChanged) UpdateExperienceVisual(view, experienced);
-            if (view.ready != focused || experienceChanged)
+            bool touch = experience.UsesTouchControls;
+            if (view.ready != focused || experienceChanged || view.touch != touch)
             {
-                view.ready = focused;
-                view.action.text = experienced ? (focused ? "体験済み・Eで観察" : "体験済み・もう一度") :
+                view.ready = focused;view.touch = touch;
+                view.action.text = touch ? (experienced ? "体験済み・もう一度" : IdleAction(view.landmark.kind).Replace("クリック", "タップ")) :
+                    experienced ? (focused ? "体験済み・Eで観察" : "体験済み・もう一度") :
                     focused ? (view.landmark.kind == Kind.Microscope ? "E でのぞく" : "E で手に取る") : IdleAction(view.landmark.kind);
             }
             view.focus = Mathf.MoveTowards(view.focus, focused ? 1 : 0, Time.unscaledDeltaTime * 5);

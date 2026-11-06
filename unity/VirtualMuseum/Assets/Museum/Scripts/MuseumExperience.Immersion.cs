@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.EnhancedTouch;
 using System.Collections.Generic;
 
 // Observation keeps the visitor in the room: the camera leans toward the
@@ -28,7 +29,7 @@ public partial class MuseumExperience
     Texture2D microscopeVignette;
 
     public bool WayfindingVisible => mode=="walk" && !immersionActive &&
-        answer=="" && !listOpen && !helpOpen && !touring;
+        !TouchWorldInputBlocked && !externalOverlay && !touring;
     public Component ReadyInteraction => nearbyMicroscope ? (Component)nearbyMicroscope : nearbyExhibit;
     public bool HasExperienced(Component target) => target && experiencedInteractions.Contains(target);
 
@@ -177,7 +178,7 @@ public partial class MuseumExperience
     void UpdateNearbyInteraction(Keyboard keys)
     {
         nearbyExhibit=null;nearbyMicroscope=null;
-        if(touring || mode!="walk" || immersionActive || answer!="" || listOpen || helpOpen) return;
+        if(touring || mode!="walk" || immersionActive || TouchWorldInputBlocked || externalOverlay) return;
         float best=2.7f;
         if(roomExhibits!=null) foreach(var exhibit in roomExhibits) {
             if(!exhibit) continue;
@@ -248,6 +249,8 @@ public partial class MuseumExperience
 
     void OnDisable()
     {
+        CancelTouchGestures();
+        if(enhancedTouchOwned) {EnhancedTouchSupport.Disable();enhancedTouchOwned=false;}
         CloseObservationImmediately();
     }
 

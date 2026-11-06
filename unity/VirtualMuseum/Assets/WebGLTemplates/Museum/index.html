@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#0d1d2b">
   <meta name="description" content="愛媛大学ミュージアムの収蔵展示室をもとにしたバーチャル展示室。標本を手に取り、顕微鏡で観察し、アイモナイト君と展示を巡るプロトタイプです。">
   <title>バーチャル展示室 | 愛媛大学ミュージアム</title>
@@ -21,7 +21,7 @@
     </header>
 
     <section class="stage" aria-label="バーチャル展示室">
-      <canvas id="unity-canvas" width="{{{ WIDTH }}}" height="{{{ HEIGHT }}}" tabindex="0" aria-label="展示室。十字キーまたはWASDで移動、右ドラッグで見回します。"></canvas>
+      <canvas id="unity-canvas" width="{{{ WIDTH }}}" height="{{{ HEIGHT }}}" tabindex="0" aria-label="バーチャル展示室。操作案内から移動や観察の方法を確認できます。"></canvas>
       <div id="entry-overlay" class="entry-overlay">
         <div class="entry-card">
           <p class="eyebrow"><span></span> COLLECTIONS, CLOSER.</p>
@@ -30,7 +30,7 @@
           <p class="description">標本を手に取り、顕微鏡をのぞく。<br>アイモナイト君と一緒に、小さな発見を探しましょう。</p>
           <div id="entry-actions">
             <button id="start-button" class="primary-button" type="button">展示室に入る <span aria-hidden="true">↗</span></button>
-            <p class="device-note">PCのキーボード・マウス向け</p>
+            <p class="device-note"><span class="pointer-copy">キーボード・マウスで自由に見学</span><span class="touch-copy">タッチで移動・観察できます。縦向きのままでどうぞ。</span></p>
           </div>
           <div id="loading" hidden aria-live="polite" aria-atomic="true">
             <div class="loading-label"><span id="loading-message">展示室を準備しています</span><span id="progress-text">0%</span></div>
@@ -41,7 +41,6 @@
             <p id="error-message"></p>
             <button id="retry-button" class="primary-button" type="button">もう一度読み込む <span aria-hidden="true">↻</span></button>
           </div>
-          <p class="portrait-note">横向きの広い画面での見学をおすすめします。</p>
           <noscript><p class="no-script">展示室の見学には、ブラウザーのJavaScriptを有効にしてください。</p></noscript>
         </div>
         <span class="orbit orbit-one" aria-hidden="true"></span>
@@ -52,7 +51,8 @@
     </section>
 
     <footer class="toolbar">
-      <p class="quick-help"><kbd>WASD</kbd> / <kbd>↑↓←→</kbd> 移動 <span>·</span> 右ドラッグで見回す <span>·</span> <kbd>E</kbd> 観察 <span>·</span> <kbd>Esc</kbd> 戻る</p>
+      <p class="quick-help pointer-copy"><kbd>WASD</kbd> / <kbd>↑↓←→</kbd> 移動 <span>·</span> 右ドラッグで見回す <span>·</span> <kbd>E</kbd> 観察 <span>·</span> <kbd>Esc</kbd> 戻る</p>
+      <p class="quick-help touch-copy">タップして移動・観察 <span>·</span> ドラッグで見回す</p>
       <div class="toolbar-actions">
         <button id="help-button" class="text-button" type="button" aria-expanded="false" aria-controls="control-guide">操作案内</button>
         <button id="fullscreen-button" class="text-button" type="button" disabled aria-label="展示室を全画面で表示">全画面 <span aria-hidden="true">⛶</span></button>
@@ -61,13 +61,21 @@
 
     <aside id="control-guide" class="control-guide" hidden aria-label="操作案内">
       <div class="guide-heading"><h2>見学のしかた</h2><button id="close-help-button" class="text-button" type="button" aria-label="操作案内を閉じる">閉じる ×</button></div>
-      <dl>
+      <dl class="pointer-copy">
         <div><dt>移動する</dt><dd>十字キー・WASD、または通路の床をクリック</dd></div>
         <div><dt>見回す</dt><dd>マウスの右ボタンを押したままドラッグ</dd></div>
         <div><dt>標本・顕微鏡を観察</dt><dd>光るサインをクリック。近づいて対象を見るとEキーでも操作できます。</dd></div>
         <div><dt>回転・拡大する</dt><dd>観察中に左ドラッグ・マウスホイール</dd></div>
         <div><dt>解説を読む</dt><dd>アイモナイト君、または紫色のサインをクリック</dd></div>
         <div><dt>すばやく巡る</dt><dd>画面左下の「展示一覧・移動」や「自動見学」を利用</dd></div>
+      </dl>
+      <dl class="touch-copy">
+        <div><dt>移動する</dt><dd>左下の移動パッドを指で動かすか、通路の床をタップします。</dd></div>
+        <div><dt>見回す</dt><dd>展示室を1本指でドラッグ。移動パッドと同時にも使えます。</dd></div>
+        <div><dt>標本・顕微鏡を観察</dt><dd>光るサインや展示物をタップ。観察を終えるときは画面内の「戻る」ボタンを使います。</dd></div>
+        <div><dt>回転・拡大する</dt><dd>標本を1本指でドラッグして回転。2本指で広げる・つまむと拡大・縮小できます。＋／−ボタンも使えます。</dd></div>
+        <div><dt>顕微鏡をのぞく</dt><dd>拡大した画像を1本指でドラッグして観察位置を変えます。</dd></div>
+        <div><dt>解説・すばやい移動・自動見学</dt><dd>「移動」で目的地へ。「メニュー」から解説・自動見学を選べます。紫色のサインでも解説を開けます。</dd></div>
       </dl>
       <p>体験した場所のサインにはチェックが付きます。再び観察することもできます。</p>
     </aside>
@@ -90,7 +98,41 @@
       const fullscreenButton = document.getElementById("fullscreen-button");
       const helpButton = document.getElementById("help-button");
       const guide = document.getElementById("control-guide");
+      const coarsePointer = window.matchMedia("(any-pointer: coarse)");
       let started = false;
+      let viewportFrame = 0;
+      let lastViewport = "";
+
+      function sendToMuseum(method, value) {
+        if (!window.unityInstance) return false;
+        try {
+          window.unityInstance.SendMessage("Museum experience", method, value);
+          return true;
+        } catch (error) {
+          console.warn("Museum interface:", error);
+          return false;
+        }
+      }
+
+      function syncViewport() {
+        viewportFrame = 0;
+        const touch = coarsePointer.matches || navigator.maxTouchPoints > 0;
+        app.dataset.input = touch ? "touch" : "pointer";
+        const bounds = canvas.getBoundingClientRect();
+        const viewport = JSON.stringify({ width: Math.round(bounds.width), height: Math.round(bounds.height), touch });
+        if (window.unityInstance && viewport !== lastViewport && bounds.width > 0 && bounds.height > 0) {
+          if (sendToMuseum("SetWebViewport", viewport)) lastViewport = viewport;
+        }
+      }
+
+      function scheduleViewport() {
+        if (!viewportFrame) viewportFrame = requestAnimationFrame(syncViewport);
+      }
+      new ResizeObserver(scheduleViewport).observe(canvas);
+      coarsePointer.addEventListener("change", scheduleViewport);
+      window.addEventListener("resize", scheduleViewport);
+      window.visualViewport?.addEventListener("resize", scheduleViewport);
+      syncViewport();
 
       function showError(detail) {
         console.error("Museum player:", detail);
@@ -156,7 +198,9 @@
             overlay.hidden = true;
             loading.hidden = true;
             fullscreenButton.disabled = !document.fullscreenEnabled;
-            canvas.focus();
+            syncViewport();
+            sendToMuseum("SetWebOverlay", guide.hidden ? "0" : "1");
+            if (guide.hidden) canvas.focus({ preventScroll: true });
           }).catch(showError);
         };
         document.body.appendChild(loader);
@@ -164,7 +208,7 @@
 
       document.getElementById("retry-button").addEventListener("click", () => location.reload());
       canvas.addEventListener("contextmenu", (event) => event.preventDefault());
-      canvas.addEventListener("pointerdown", () => canvas.focus());
+      canvas.addEventListener("pointerdown", () => canvas.focus({ preventScroll: true }));
       // Keep movement keys inside the exhibit instead of scrolling its host page.
       canvas.addEventListener("keydown", (event) => {
         if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " "].includes(event.key)) event.preventDefault();
@@ -184,6 +228,7 @@
       function setHelp(open) {
         guide.hidden = !open;
         helpButton.setAttribute("aria-expanded", String(open));
+        sendToMuseum("SetWebOverlay", open ? "1" : "0");
         if (open) document.getElementById("close-help-button").focus();
         else if (app.dataset.state === "running") canvas.focus();
         else helpButton.focus();

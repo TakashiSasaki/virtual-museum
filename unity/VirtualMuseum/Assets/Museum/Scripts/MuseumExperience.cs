@@ -67,12 +67,13 @@ public partial class MuseumExperience : MonoBehaviour
         runtimeFrames++;
         var mouse=Mouse.current; var keys=Keyboard.current;
         if(keys!=null && keys.escapeKey.wasPressedThisFrame) {
-            if(touring) StopTour(); else if(mode!="walk") CloseObservation(); else { listOpen=false; helpOpen=false; answer=""; }
+            if(touring) StopTour(); else if(mode!="walk") CloseObservation(); else { listOpen=false; helpOpen=false; compactMenuOpen=false; answer=""; }
         }
         UpdateImmersion();
-        UpdateNearbyInteraction(keys);
+        UpdateNearbyInteraction(externalOverlay?null:keys);
+        UpdateTouchInput();
         if(touring) {
-            if(!tourPaused) {
+            if(!tourPaused && !externalOverlay) {
                 if(tourMoving) { if(!ImmersionActive) UpdateTourTravel(); }
                 else if(!ImmersionTransitioning) {
                     tourElapsed+=Time.deltaTime;
@@ -80,26 +81,18 @@ public partial class MuseumExperience : MonoBehaviour
                     if(tourElapsed>=tourDurations[tourStep]) AdvanceTour();
                 }
             }
-        } else if(mode=="walk" && !ImmersionActive && answer=="" && !helpOpen) {
-            float x=0,z=0;
+        } else if(mode=="walk" && !ImmersionActive && !TouchWorldInputBlocked && !externalOverlay) {
+            float x=touchMovement.x,z=touchMovement.y;
             if(keys!=null) {
-                x=(keys.rightArrowKey.isPressed||keys.dKey.isPressed?1:0)-(keys.leftArrowKey.isPressed||keys.aKey.isPressed?1:0);
-                z=(keys.upArrowKey.isPressed||keys.wKey.isPressed?1:0)-(keys.downArrowKey.isPressed||keys.sKey.isPressed?1:0);
+                x+=(keys.rightArrowKey.isPressed||keys.dKey.isPressed?1:0)-(keys.leftArrowKey.isPressed||keys.aKey.isPressed?1:0);
+                z+=(keys.upArrowKey.isPressed||keys.wKey.isPressed?1:0)-(keys.downArrowKey.isPressed||keys.sKey.isPressed?1:0);
             }
-            if(mouse!=null && !OverUI(mouse.position.ReadValue())) {
+            if(mouse!=null && !IgnoreGameplayMouse && !OverUI(mouse.position.ReadValue())) {
                 if(mouse.rightButton.isPressed) {
                     Vector2 delta=mouse.delta.ReadValue(); yaw+=delta.x*.13f; pitch=Mathf.Clamp(pitch-delta.y*.13f,-60,60);
                 }
                 if(mouse.leftButton.wasPressedThisFrame) {
-                    Ray ray=visitorCamera.ScreenPointToRay(mouse.position.ReadValue());
-                    bool usedSign=wayfinding && wayfinding.TryActivate(ray);
-                    if(!usedSign && Physics.Raycast(ray,out var hit,40)) {
-                        var exhibit=hit.collider.GetComponentInParent<MuseumExhibit>();
-                        if(exhibit) Observe(exhibit.index);
-                        else if(hit.collider.GetComponentInParent<MicroscopeStation>() is MicroscopeStation station) Microscope(station);
-                        else if(hit.collider.name=="Walkable floor" || hit.collider.name=="Work area floor" || hit.collider.name=="Aisle marker" || hit.collider.name=="Metal floor strip") {walkTarget=hit.point;walkTarget.y=visitor.transform.position.y;walking=true;}
-                        else if(hit.collider.GetComponentInParent<GuideMarker>()) Talk();
-                    }
+                    ActivateWorldPoint(mouse.position.ReadValue());
                 }
             }
             if(!ImmersionActive) {
@@ -115,7 +108,7 @@ public partial class MuseumExperience : MonoBehaviour
                 if(walking && move.sqrMagnitude>0 && (visitor.transform.position-before).sqrMagnitude<.000001f) {walking=false;notice="障害物があります。通路の床を選ぶか、展示一覧を使ってください。";}
             }
         }
-        if(mouse!=null && !touring && !ImmersionTransitioning && (mode=="observe"||mode=="scope") && !OverUI(mouse.position.ReadValue())) {
+        if(mouse!=null && !IgnoreGameplayMouse && !externalOverlay && !touring && !ImmersionTransitioning && (mode=="observe"||mode=="scope") && !OverUI(mouse.position.ReadValue())) {
             Vector2 delta=mouse.delta.ReadValue();float scroll=mouse.scroll.ReadValue().y;
             if(mode=="observe" && held) {
                 if(mouse.leftButton.isPressed) {held.transform.Rotate(Vector3.up,-delta.x*.35f,Space.World);held.transform.Rotate(Vector3.right,delta.y*.35f,Space.World);}
@@ -144,6 +137,7 @@ public partial class MuseumExperience : MonoBehaviour
 
     bool OverUI(Vector2 screen)
     {
+        if(CompactUI) return CompactOverUI(screen);
         float s=Mathf.Min(Screen.width/1440f,Screen.height/810f);float offset=(Screen.width-1440*s)/2;
         Vector2 p=new Vector2((screen.x-offset)/s,(Screen.height-screen.y)/s);
         return p.y<105 || p.y>uiHeight-100 || p.x>uiWidth-375 || (listOpen && p.x<350) || helpOpen || answer!="";
@@ -187,6 +181,7 @@ public partial class MuseumExperience : MonoBehaviour
         questions++;
         answer=index==0?"これは本物の標本？\n\n今はプロトタイプなので、形を単純化したダミー標本を展示しています。将来、実物の資料や監修済みの説明に差し替える予定です。":
         index==1?"顕微鏡では何が見える？\n\nこの版では拡大と移動の操作を試すための模式図が見られます。実際の顕微鏡写真ではなく、表示倍率も操作用の仮倍率です。":
+        TouchControlsVisible?"どうやって観察する？\n\n「標本を見る」で開き、指でドラッグすると回転、2本指で広げると拡大できます。＋・－でも倍率を変えられます。「顕微鏡」で模式図に切り替え、「戻る」で展示室に戻ります。":
         "どうやって観察する？\n\n「手に取る」で標本を開き、左ドラッグで回転、ホイールで拡大します。「顕微鏡で見る」で模式図に切り替えられます。Escで戻れます。";
     }
     public void StartTour() { touring=true;tourPaused=false;tourStep=0;listOpen=false;helpOpen=false;if(guide)guide.position=new Vector3(-1.8f,0,11.6f);Jump(4);ApplyTourStep(); }
@@ -245,6 +240,8 @@ public partial class MuseumExperience : MonoBehaviour
     void Label(float x,float y,float w,float h,string text,GUIStyle style=null) {GUI.Label(new Rect(x,y,w,h),text,style??bodyStyle);}
     void OnGUI()
     {
+        if(CompactUI) { SetupStyles(); DrawCompactUI(); return; }
+        compactMenuOpen=false;
         SetupStyles();float scale=Mathf.Min(Screen.width/1440f,Screen.height/810f);uiWidth=1440;uiHeight=Screen.height/scale;
         GUI.matrix=Matrix4x4.TRS(new Vector3((Screen.width-1440*scale)/2,0,0),Quaternion.identity,new Vector3(scale,scale,1));
         GUI.DrawTexture(new Rect(0,0,1440,96),dark);
