@@ -17,6 +17,7 @@ public sealed class MuseumWayfinding : MonoBehaviour
         public Kind kind;
         public string title;
         public float badgeHeight = 1.8f;
+        public int displayGroup;
     }
 
     public MuseumExperience experience;
@@ -84,6 +85,7 @@ public sealed class MuseumWayfinding : MonoBehaviour
             }
             badge.transform.localPosition += Vector3.up * landmark.badgeHeight;
             var title = Text("Title", badge.transform, landmark.title, -.13f, 64, landmark.kind == Kind.Guide ? .0175f : .022f);
+            title.characterSize*=Mathf.Min(1,6f/Mathf.Max(1,landmark.title.Length));
             var action = Text("Action", badge.transform, IdleAction(landmark.kind), -.255f, 44, .0195f);
             action.color = accent;
             views.Add(new View { landmark = landmark, root = root, badge = badge.transform, floorRenderer = floor,
@@ -193,6 +195,22 @@ public sealed class MuseumWayfinding : MonoBehaviour
             Vector3 direction = view.badge.position - camera.position;
             float horizontalDistance = new Vector2(direction.x, direction.z).magnitude;
             bool inRange = direction.sqrMagnitude <= badgeViewDistance * badgeViewDistance && horizontalDistance > .27f;
+            if(experience.collection && view.landmark.kind==Kind.Specimen)
+            {
+                // Keep the individual floor cues, but prevent a large specimen
+                // collection from filling a small screen with overlapping labels.
+                view.floorRenderer.transform.localScale=Vector3.one*.45f;
+                int closer=0;
+                foreach(var other in views)
+                {
+                    if(other==view || other.landmark.kind!=Kind.Specimen || !other.badge)continue;
+                    if(!GroupRepresentative(other,ready,camera.position))continue;
+                    var offset=other.badge.position-camera.position;
+                    if(Vector3.Dot(camera.forward,offset)>0 && offset.sqrMagnitude<direction.sqrMagnitude)closer++;
+                }
+                inRange &= focused || (Vector3.Dot(camera.forward,direction)>0 && closer<(experience.UsesTouchControls?3:5));
+                inRange &= GroupRepresentative(view,ready,camera.position);
+            }
             if (view.badge.gameObject.activeSelf != inRange) view.badge.gameObject.SetActive(inRange);
             // Cap its apparent size near an approach point: the sign must not
             // cover the specimen when the visitor uses a movement shortcut.
@@ -201,6 +219,21 @@ public sealed class MuseumWayfinding : MonoBehaviour
             direction.y = 0;
             if (direction.sqrMagnitude > .0001f) view.badge.rotation = Quaternion.LookRotation(direction, Vector3.up);
         }
+    }
+
+    bool GroupRepresentative(View view,Component ready,Vector3 camera)
+    {
+        if(view.landmark.displayGroup==0)return true;
+        float Priority(View candidate)
+        {
+            if(candidate.landmark.target==ready)return -2;
+            if(candidate.landmark.target is MuseumExhibit e && e.index==experience.selected)return -1;
+            return (candidate.landmark.target.transform.position-camera).sqrMagnitude;
+        }
+        float priority=Priority(view);
+        foreach(var other in views)
+            if(other!=view && other.landmark.displayGroup==view.landmark.displayGroup && other.landmark.target && Priority(other)<priority)return false;
+        return true;
     }
 
     // Decorative geometry has no colliders. A sign can still be clicked by

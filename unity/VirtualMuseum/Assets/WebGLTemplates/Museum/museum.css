@@ -131,3 +131,18 @@ kbd { color: #d2dfe4; font-family: inherit; font-size: 10px; }
   .control-guide { max-height: calc(100% - 92px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)); }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; } }
+
+/* Keep the exhibit close to the viewport edges, including on wide monitors.
+   The in-player header supplies the title once the museum has opened. */
+#museum-app, #museum-app:fullscreen {
+  width: 100%; max-width: none; height: 100svh; height: 100dvh; min-height: 0;
+  padding: env(safe-area-inset-top, 0px) max(2px, env(safe-area-inset-right, 0px)) env(safe-area-inset-bottom, 0px) max(2px, env(safe-area-inset-left, 0px));
+}
+.masthead, #museum-app:fullscreen .masthead { height: 44px; flex-basis: 44px; }
+.brand-mark { width: 30px; height: 30px; }
+.brand small { display: none; }
+#museum-app[data-state="running"] .masthead { display: none; }
+.stage, #museum-app:fullscreen .stage { flex: 1 1 0; height: auto; min-height: 0; max-height: none; border: 0; border-radius: 0; }
+.toolbar, #museum-app:fullscreen .toolbar { min-height: 44px; flex: 0 0 44px; }
+.quick-help { margin: 0 8px; }
+.control-guide { right: 4px; bottom: 44px; width: min(480px, calc(100% - 8px)); max-height: calc(100% - 52px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)); }

@@ -109,7 +109,7 @@ public partial class MuseumExperience
 
         if(!touring && mode=="walk" && !ImmersionActive && !TouchWorldInputBlocked && ReadyInteraction)
         {
-            if(CompactButton(CompactReadyRect,nearbyMicroscope?"この顕微鏡をのぞく":"この標本を手に取る",true))
+            if(CompactButton(CompactReadyRect,nearbyMicroscope?"この顕微鏡をのぞく":names[nearbyExhibit.index]+" を観察",true))
             {if(nearbyMicroscope) Microscope(nearbyMicroscope);else if(nearbyExhibit) Observe(nearbyExhibit.index);}
         }
         if(CompactNavigationVisible) DrawTouchNavigation();
@@ -131,7 +131,7 @@ public partial class MuseumExperience
     {
         float top=CompactDockTop;
         GUI.DrawTexture(new Rect(0,top,uiWidth,CompactDockHeight),dark);
-        GUI.Label(new Rect(12,top+5,uiWidth-24,31),"0"+(selected+1)+"  "+names[selected],compactLight);
+        GUI.Label(new Rect(12,top+5,uiWidth-24,31),(selected+1).ToString("00")+"  "+names[selected],compactLight);
         float width=(uiWidth-32)/3;
         bool enabled=GUI.enabled;GUI.enabled=enabled && !ImmersionTransitioning;
         if(CompactButton(new Rect(8,top+40,width,48),"標本を見る",true))
@@ -211,12 +211,12 @@ public partial class MuseumExperience
         {
             ClampPan();float extent=1/scopeZoom;
             GUI.color=new Color(previous.r,previous.g,previous.b,previous.a*blend*lens);
-            GUI.DrawTextureWithTexCoords(view,scopeTextures[selected],new Rect(scopePan.x-extent/2,scopePan.y-extent/2,extent,extent));
+            GUI.DrawTextureWithTexCoords(view,ScopeImage(selected),new Rect(scopePan.x-extent/2,scopePan.y-extent/2,extent,extent));
             GUI.DrawTexture(view,microscopeVignette);
         }
         GUI.color=new Color(previous.r,previous.g,previous.b,previous.a*blend);
         GUI.Label(new Rect(12,CompactHeaderHeight+2,uiWidth-24,28),microscopeBlend>.5f?
-            "模式図・仮倍率 / 指で観察位置を移動":"ダミー標本 / 指で回転・2本指で拡大",compactLight);
+            "模式図・仮倍率 / 指で観察位置を移動":"3D模型 / 指で回転・2本指で拡大",compactLight);
         GUI.color=previous;
     }
 
@@ -255,10 +255,10 @@ public partial class MuseumExperience
     {
         Rect area=CompactPanel("目的地へ移動",out bool close);
         if(close)listOpen=false;
-        const float height=310;
+        float height=(SpecimenCount+2)*62;
         BeginCompactScroll(area,height,ref compactListScroll);
-        for(int i=0;i<5;i++)
-            if(CompactButton(new Rect(0,i*62,area.width-20,52),i<3?"0"+(i+1)+"  "+names[i]:i==3?"観察台・顕微鏡":"入口・全体を見渡す"))Jump(i);
+        for(int i=0;i<SpecimenCount+2;i++)
+            if(CompactButton(new Rect(0,i*62,area.width-20,52),ListDestinationLabel(i)))Jump(ListDestination(i));
         EndCompactScroll(area,height,ref compactListScroll);
     }
 

@@ -66,7 +66,12 @@ public partial class MuseumExperience
     {
         zoom=1;
         if(held) Destroy(held);
-        held=Instantiate(specimenModels[index],specimenStage);
+        held=new GameObject("Inspection specimen");held.transform.SetParent(specimenStage,false);
+        var model=Instantiate(specimenModels[index],held.transform);
+        var bounds=ModelBounds(model);
+        float scale=.66f/Mathf.Max(.001f,Mathf.Max(bounds.size.x,Mathf.Max(bounds.size.y,bounds.size.z)));
+        model.transform.localScale*=scale;
+        model.transform.localPosition=(specimenStage.position-bounds.center)*scale;
         held.transform.localPosition=Vector3.zero;
         held.transform.localRotation=Quaternion.Euler(-20,0,0);
         held.transform.localScale=Vector3.one;
@@ -190,7 +195,7 @@ public partial class MuseumExperience
             float score=InteractionScore(station);
             if(score<best) {best=score;nearbyMicroscope=station;nearbyExhibit=null;}
         }
-        if(nearbyExhibit) selected=nearbyExhibit.index;
+        if(nearbyExhibit && !selectionPinned) selected=nearbyExhibit.index;
         if(keys!=null && keys.eKey.wasPressedThisFrame) {
             if(nearbyMicroscope) Microscope(nearbyMicroscope);
             else if(nearbyExhibit) Observe(nearbyExhibit.index);
@@ -237,7 +242,7 @@ public partial class MuseumExperience
         if(lens>0) {
             ClampPan();float extent=1/scopeZoom;
             GUI.color=new Color(previous.r,previous.g,previous.b,previous.a*blend*lens);
-            GUI.DrawTextureWithTexCoords(view,scopeTextures[selected],new Rect(scopePan.x-extent/2,scopePan.y-extent/2,extent,extent));
+            GUI.DrawTextureWithTexCoords(view,ScopeImage(selected),new Rect(scopePan.x-extent/2,scopePan.y-extent/2,extent,extent));
             GUI.DrawTexture(view,microscopeVignette);
         }
         GUI.color=new Color(previous.r,previous.g,previous.b,previous.a*blend);
@@ -256,6 +261,7 @@ public partial class MuseumExperience
 
     void OnDestroy()
     {
+        if(scopeTextures!=null)foreach(var texture in scopeTextures)if(texture)Destroy(texture);
         ReleaseFonts();
         if(microscopeVignette) Destroy(microscopeVignette);
     }

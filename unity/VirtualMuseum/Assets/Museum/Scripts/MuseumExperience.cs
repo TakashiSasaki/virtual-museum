@@ -23,9 +23,9 @@ public partial class MuseumExperience : MonoBehaviour
     public int moves, observations, microscopeVisits, questions;
     public int runtimeFrames;
 
-    readonly string[] names = { "コガネムシのかたち", "チョウの翅を見よう", "アンモナイトの渦" };
-    readonly string[] english = { "BEETLE / FORM", "BUTTERFLY / PATTERN", "AMMONITE / SPIRAL" };
-    readonly string[] descriptions = {
+    string[] names = { "コガネムシのかたち", "チョウの翅を見よう", "アンモナイトの渦" };
+    string[] english = { "BEETLE / FORM", "BUTTERFLY / PATTERN", "AMMONITE / SPIRAL" };
+    string[] descriptions = {
         "硬い前翅と、左右に並ぶ脚に注目してみよう。\nこの模型は操作確認用に形を単純化したダミー標本です。実在の種を再現したものではありません。",
         "左右に広がる翅の形と模様を、向きを変えて見てみよう。\n翅の模様と色は仮設定です。顕微鏡では鱗粉をイメージした模式図を用意しました。",
         "外側へ向かって広がる渦巻きを、表と裏から見てみよう。\nこれは渦の形を試すためのダミー模型です。化石の内部構造を正確に再現していません。"
@@ -54,8 +54,8 @@ public partial class MuseumExperience : MonoBehaviour
         visitorCamera.nearClipPlane=.06f;
         yaw=visitor.transform.eulerAngles.y;
         SetupFonts();
-        scopeTextures = new Texture2D[3];
-        for(int i=0;i<3;i++) scopeTextures[i]=MakeScope(i);
+        LoadCollection();
+        scopeTextures = new Texture2D[SpecimenCount];
         specimenCamera.targetTexture=specimenView;
         specimenCamera.gameObject.SetActive(false);
         SetupImmersion();
@@ -89,6 +89,7 @@ public partial class MuseumExperience : MonoBehaviour
             }
             if(mouse!=null && !IgnoreGameplayMouse && !OverUI(mouse.position.ReadValue())) {
                 if(mouse.rightButton.isPressed) {
+                    selectionPinned=false;
                     Vector2 delta=mouse.delta.ReadValue(); yaw+=delta.x*.13f; pitch=Mathf.Clamp(pitch-delta.y*.13f,-60,60);
                 }
                 if(mouse.leftButton.wasPressedThisFrame) {
@@ -98,7 +99,7 @@ public partial class MuseumExperience : MonoBehaviour
             if(!ImmersionActive) {
                 visitor.transform.rotation=Quaternion.Euler(0,yaw,0);visitorCamera.transform.localRotation=Quaternion.Euler(pitch,0,0);
                 var move=Vector3.ClampMagnitude(visitor.transform.right*x+visitor.transform.forward*z,1);
-                if(move.sqrMagnitude>0) walking=false;
+                if(move.sqrMagnitude>0) {walking=false;selectionPinned=false;}
                 if(walking) {
                     var delta=walkTarget-visitor.transform.position;delta.y=0;
                     if(delta.magnitude<.15f) walking=false; else move=delta.normalized;
@@ -144,11 +145,14 @@ public partial class MuseumExperience : MonoBehaviour
     }
     public void Jump(int index)
     {
+        if(index<0 || index>=destinations.Length || !destinations[index])return;
         CloseObservationImmediately();answer="";walking=false;
         visitor.enabled=false; visitor.transform.position=destinations[index].position; visitor.transform.rotation=destinations[index].rotation; visitor.enabled=true;
         yaw=visitor.transform.eulerAngles.y;pitch=0;visitorCamera.transform.localRotation=Quaternion.identity;
-        if(index<3) selected=index;
-        moves++;listOpen=false;notice=index<3?names[index]+" の前に移動しました。":"目的地に移動しました。";
+        int specimen=SpecimenForDestination(index);
+        selectionPinned=specimen>=0;
+        if(specimen>=0 && specimen<SpecimenCount){selected=specimen;FaceSelectedSpecimen();}
+        moves++;listOpen=false;notice=specimen>=0?names[selected]+" の前に移動しました。":"目的地に移動しました。";
     }
     public void Observe(int index)
     {
@@ -161,6 +165,7 @@ public partial class MuseumExperience : MonoBehaviour
     public void Microscope() { Microscope(null); }
     public void Microscope(MicroscopeStation station)
     {
+        ScopeImage(selected);
         if(!held) { PrepareHeldSpecimen(selected); observations++; }
         walking=false;answer="";listOpen=false;mode="scope";
         observedMicroscope=ResolveMicroscope(station);
@@ -179,12 +184,12 @@ public partial class MuseumExperience : MonoBehaviour
     public void Ask(int index)
     {
         questions++;
-        answer=index==0?"これは本物の標本？\n\n今はプロトタイプなので、形を単純化したダミー標本を展示しています。将来、実物の資料や監修済みの説明に差し替える予定です。":
+        answer=index==0?"これは本物の標本？\n\n形や体の構造を見比べるために制作した3D展示模型です。実物をスキャンした標本ではありません。色や大きさ、細部には表現上の調整をしています。":
         index==1?"顕微鏡では何が見える？\n\nこの版では拡大と移動の操作を試すための模式図が見られます。実際の顕微鏡写真ではなく、表示倍率も操作用の仮倍率です。":
         TouchControlsVisible?"どうやって観察する？\n\n「標本を見る」で開き、指でドラッグすると回転、2本指で広げると拡大できます。＋・－でも倍率を変えられます。「顕微鏡」で模式図に切り替え、「戻る」で展示室に戻ります。":
         "どうやって観察する？\n\n「手に取る」で標本を開き、左ドラッグで回転、ホイールで拡大します。「顕微鏡で見る」で模式図に切り替えられます。Escで戻れます。";
     }
-    public void StartTour() { touring=true;tourPaused=false;tourStep=0;listOpen=false;helpOpen=false;if(guide)guide.position=new Vector3(-1.8f,0,11.6f);Jump(4);ApplyTourStep(); }
+    public void StartTour() { touring=true;tourPaused=false;tourStep=0;listOpen=false;helpOpen=false;if(guide)guide.position=new Vector3(-1.4f,0,6f);Jump(4);ApplyTourStep(); }
     public void AdvanceTour()
     {
         tourStep++;
@@ -207,7 +212,7 @@ public partial class MuseumExperience : MonoBehaviour
             if(routePoint==tourRoute.Length) {
                 tourMoving=false;yaw=destinations[tourDestination].eulerAngles.y;pitch=0;
                 visitor.transform.rotation=Quaternion.Euler(0,yaw,0);visitorCamera.transform.localRotation=Quaternion.identity;
-                if(tourDestination<3)selected=tourDestination;
+                if(tourDestination<3){selected=tourDestination;FaceSelectedSpecimen();}
                 if(tourStep==2)Observe(1);
                 if(tourStep==3){Observe(1);Microscope();scopeZoom=3;}
                 if(tourStep==4)Talk();
@@ -247,7 +252,7 @@ public partial class MuseumExperience : MonoBehaviour
         GUI.DrawTexture(new Rect(0,0,1440,96),dark);
         Label(30,14,750,26,"EHIME UNIVERSITY MUSEUM  /  VIRTUAL COLLECTION",subtitleStyle);
         Label(30,39,850,46,"収蔵庫を、探検しよう。",darkTextStyle);
-        Label(1090,20,325,28,"PROTOTYPE 01  ·  ダミー展示",subtitleStyle);
+        Label(1090,20,325,28,"PROTOTYPE 01  ·  3D展示模型",subtitleStyle);
         if(Button(1260,53,150,"操作ガイド",false,32)) {helpOpen=!helpOpen;walking=false;}
 
         DrawImmersiveObservation();
@@ -255,17 +260,17 @@ public partial class MuseumExperience : MonoBehaviour
 
         GUI.DrawTexture(new Rect(1065,108,355,uiHeight-220),panel);
         float rx=1085;
-        Label(rx,126,310,25,"COLLECTION  /  0"+(selected+1),smallStyle);
+        Label(rx,126,310,25,"COLLECTION  /  "+(selected+1).ToString("00"),smallStyle);
         Label(rx,160,310,88,names[selected],titleStyle);
         Label(rx,246,310,25,english[selected],smallStyle);
-        Label(rx,287,310,110,mode=="scope"?"拡大資料：操作確認用の模式図\n実際の顕微鏡写真ではありません。": "標本の形を、いろいろな角度から。\nこの展示はダミー標本です。",bodyStyle);
+        Label(rx,287,310,110,mode=="scope"?"拡大資料：操作確認用の模式図\n実際の顕微鏡写真ではありません。": "標本の形を、いろいろな角度から。\n観察用に制作した3D模型です。",bodyStyle);
         float by=410;
         if(!touring) {
             bool controlsEnabled=GUI.enabled;
             GUI.enabled=controlsEnabled && !ImmersionTransitioning;
             if(mode=="walk") {
                 if(Button(rx,by,310,"標本を手に取る",true)) Observe(selected);
-                if(Button(rx,by+58,310,"この展示へ移動")) Jump(selected);
+                if(Button(rx,by+58,310,"この展示へ移動")) Jump(DestinationForSpecimen(selected));
                 if(Button(rx,by+116,310,"アイモナイト君の解説")) Talk();
             } else {
                 if(Button(rx,by,310,mode=="scope"?"標本に戻る":"顕微鏡で見る",true)) {if(mode=="scope")mode="observe";else Microscope();}
@@ -279,10 +284,7 @@ public partial class MuseumExperience : MonoBehaviour
             GUI.enabled=controlsEnabled;
         } else Label(rx,by,310,180,"自動見学中です。\n\n下のボタンで一時停止、次の展示への移動、自由見学への切り替えができます。",bodyStyle);
 
-        if(listOpen && !touring) {
-            GUI.DrawTexture(new Rect(20,110,330,410),panel);Label(40,130,290,45,"どこへ行きますか？",bodyStyle);
-            for(int i=0;i<5;i++) if(Button(36,185+i*61,297,i<3?"0"+(i+1)+"  "+names[i]:i==3?"観察台・顕微鏡":"入口・全体を見渡す")) Jump(i);
-        }
+        if(listOpen && !touring) DrawCollectionDestinations();
         GUI.DrawTexture(new Rect(0,uiHeight-96,1440,96),dark);
         if(!touring) {
             if(Button(24,uiHeight-75,200,listOpen?"展示一覧を閉じる":"展示一覧・移動",true)) {listOpen=!listOpen;walking=false;}
@@ -322,7 +324,8 @@ public partial class MuseumExperience : MonoBehaviour
             float v;
             if(kind==0) {float xx=(x+(y/34%2)*18)%36-18,yy=y%34-17;v=Mathf.Clamp01(1-Mathf.Sqrt(xx*xx+yy*yy)/22);colors[y*512+x]=Color.Lerp(new Color(.04f,.10f,.08f),new Color(.56f,.73f,.35f),v);}
             else if(kind==1) {float xx=(x+(y/58%2)*16)%34-17,yy=y%58;v=Mathf.Clamp01(1-Mathf.Abs(xx)/17)*(.45f+.55f*yy/58);colors[y*512+x]=Color.Lerp(new Color(.15f,.10f,.12f),new Color(.96f,.60f,.23f),v);}
-            else {float dx=x-256,dy=y-256;v=.5f+.5f*Mathf.Sin(Mathf.Sqrt(dx*dx+dy*dy)*.13f+Mathf.Atan2(dy,dx)*6);colors[y*512+x]=Color.Lerp(new Color(.22f,.14f,.10f),new Color(.85f,.72f,.46f),v);}
+            else if(kind==2) {float dx=x-256,dy=y-256;v=.5f+.5f*Mathf.Sin(Mathf.Sqrt(dx*dx+dy*dy)*.13f+Mathf.Atan2(dy,dx)*6);colors[y*512+x]=Color.Lerp(new Color(.22f,.14f,.10f),new Color(.85f,.72f,.46f),v);}
+            else colors[y*512+x]=MicroscopePattern(kind,x,y);
         }
         t.SetPixels(colors);t.Apply();return t;
     }

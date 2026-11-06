@@ -156,6 +156,7 @@ public partial class MuseumExperience
 
     void ApplyWorldDrag(Vector2 delta)
     {
+        if(mode=="walk")selectionPinned=false;
         if(mode=="walk") {walking=false;yaw+=delta.x*.18f;pitch=Mathf.Clamp(pitch-delta.y*.18f,-60,60);}
         else if(mode=="observe" && held) {held.transform.Rotate(Vector3.up,-delta.x*.45f,Space.World);held.transform.Rotate(Vector3.right,delta.y*.45f,Space.World);}
         else if(mode=="scope") {scopePan-=delta/Mathf.Max(100,CompactObservationRect.width)/scopeZoom;ClampPan();}
@@ -163,6 +164,7 @@ public partial class MuseumExperience
 
     void ActivateWorldPoint(Vector2 position)
     {
+        selectionPinned=false;
         Ray ray=visitorCamera.ScreenPointToRay(position);
         if(wayfinding && wayfinding.TryActivate(ray)) return;
         if(!Physics.Raycast(ray,out var hit,40)) return;
