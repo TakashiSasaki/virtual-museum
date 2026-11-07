@@ -33,7 +33,7 @@ public static class MuseumReserveSetup
   }
   const string catalog="Assets/Museum/ReserveCollection.asset";var data=AssetDatabase.LoadAssetAtPath<MuseumCollection>(catalog);
   if(!data){data=ScriptableObject.CreateInstance<MuseumCollection>();AssetDatabase.CreateAsset(data,catalog);}
-  data.entries=rows.Select(r=>new MuseumCollection.Entry{title=r[3],english=r[4],description=r[5]+"を観察するための制作模型です。実物のスキャンや実寸比ではありません。",model=AssetDatabase.LoadAssetAtPath<GameObject>(Models+r[4]+".fbx"),microscopePattern=3,microscopeCaption="体表・表面をイメージした模式図（実測画像ではありません）"}).ToArray();
+  data.entries=rows.Select(r=>new MuseumCollection.Entry{title=r[3],english=r[4],category=r[2],description=r[5]+"を観察するための制作模型です。実物のスキャンや実寸比ではありません。",model=AssetDatabase.LoadAssetAtPath<GameObject>(Models+r[4]+".fbx"),microscopePattern=3,microscopeCaption="体表・表面をイメージした模式図（実測画像ではありません）"}).ToArray();
   EditorUtility.SetDirty(data);AssetDatabase.SaveAssets();Debug.Log("Prepared 25 reserve models; current exhibition unchanged.");
  }
 }

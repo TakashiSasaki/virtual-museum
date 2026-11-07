@@ -256,7 +256,28 @@ public sealed class MuseumWayfinding : MonoBehaviour
                 !hit.collider.transform.IsChildOf(view.landmark.target.transform)) continue;
             closest = distance; candidate = view;
         }
-        if (candidate == null) return false;
+        if (candidate == null)
+        {
+            View floorCandidate=null;float floorDistance=float.PositiveInfinity;
+            foreach(var view in views)
+            {
+                if(!view.floorRenderer || !view.floorRenderer.gameObject.activeInHierarchy || !view.landmark.target)continue;
+                var bounds=view.floorRenderer.bounds;
+                var plane=new Plane(Vector3.up,bounds.center);
+                if(!plane.Raycast(ray,out float distance) || distance<=0 || distance>=floorDistance)continue;
+                var point=ray.GetPoint(distance)-bounds.center;
+                float radius=Mathf.Max(bounds.extents.x,bounds.extents.z);
+                if(new Vector2(point.x,point.z).sqrMagnitude>radius*radius)continue;
+                bool obstructed=false;
+                foreach(var hit in Physics.RaycastAll(ray,distance-.03f,~0,QueryTriggerInteraction.Ignore))
+                    if(!hit.collider.transform.IsChildOf(experience.visitor.transform)){obstructed=true;break;}
+                if(obstructed)continue;
+                floorCandidate=view;floorDistance=distance;
+            }
+            if(floorCandidate==null)return false;
+            experience.WalkToBeacon(floorCandidate.landmark.target,floorCandidate.landmark.anchor.position);
+            return true;
+        }
         experience.ApproachInteraction(candidate.landmark.target);
         return true;
     }

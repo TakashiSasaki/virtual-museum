@@ -55,3 +55,7 @@ desktop.ini
 
 # Rendered animation frames are generated from the Blender project
 /outputs/renders/
+
+# Reproducible Web-only preview meshes and bundle catalog
+/unity/VirtualMuseum/Assets/Museum/GeneratedWeb/
+/unity/VirtualMuseum/Assets/Museum/GeneratedWeb.meta

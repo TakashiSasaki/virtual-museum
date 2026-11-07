@@ -92,6 +92,8 @@ public static class MuseumCollectionSetup
             Bounds bounds=BoundsOf(visual);float scale=size/Mathf.Max(bounds.size.x,Mathf.Max(bounds.size.y,bounds.size.z));
             visual.transform.localScale*=scale;visual.transform.localPosition-=bounds.center*scale;
             bounds=BoundsOf(visual);display.transform.position=location+Vector3.up*(1.11f+bounds.size.y*.5f);
+            // Imported mounts face +Z; the table labels sit on the -Z edge.
+            if(i==17 || i==18)display.transform.rotation=Quaternion.Euler(0,180,0);
             var exhibit=display.AddComponent<MuseumExhibit>();exhibit.index=i;
             var collider=display.AddComponent<BoxCollider>();collider.size=new Vector3(Mathf.Max(.16f,bounds.size.x+.03f),Mathf.Max(.18f,bounds.size.y+.03f),Mathf.Max(.16f,bounds.size.z+.03f));
             var approach=i>=21?new Vector3(location.x,.06f,10.5f):i==17||i==18?new Vector3(-1.2f,.06f,10.5f):new Vector3(location.x>0?1.55f:-.55f,.06f,location.z);

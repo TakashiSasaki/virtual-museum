@@ -7,17 +7,17 @@ UnityのWebGLビルドを、このリポジトリの `gh-pages` ブランチか�
 1. Unity **6000.6.8f1** の **Web Build Support** をUnity Hubで追加しておきます。
 2. `unity/VirtualMuseum/` をEditorで開き、Playを停止し、編集したシーンを保存します。
 3. **Museum → Web → Build GitHub Pages** を実行します。
-4. 成功すると `unity/VirtualMuseum/Build/WebGL/` に `index.html`、`museum-sw.js`、`manifest.webmanifest`、`favicon.svg`、`Build/` とライセンス表記を生成します。
+4. 成功すると `unity/VirtualMuseum/Build/WebGL/` に `index.html`、`museum-sw.js`、`manifest.webmanifest`、`favicon.svg`、`Build/`、詳細模型・室内データの `Content/` とライセンス表記を生成します。`Content/catalog.json` と `Content/room.json` の両方を保持してください。[室内データの遅延ロード](room-streaming.md)も参照してください。
 
 このメニューは `MuseumWebBuild.Configure()` で設定してから `MuseumV1.unity` をビルドし、最後に `FinalizeOutput()` で `.nojekyll` と第三者素材・フォントのライセンス表記を付けます。手動で同じ設定を適用するメニューは **Museum → Web → Configure GitHub Pages** です。`Build/` はGitの追跡対象外です。
 
-配信設定はGzip圧縮とJavaScriptによるDecompression Fallbackを併用し、GitHub Pages側の独自HTTPヘッダー設定に依存しません。WebGL 2を使い、スレッドは無効です。初期メモリは256 MB、上限は2048 MBです。[UnityのWeb配信設定](https://docs.unity3d.com/6000.6/Documentation/Manual/webgl-deploying.html)を参照してください。
+配信設定はBrotli圧縮とJavaScriptによるDecompression Fallbackを併用し、GitHub Pages側の独自HTTPヘッダー設定に依存しません。コードはDisk Size with LTO・IL2CPP OptimizeSize・Managed Stripping Highを使用し、ブラウザーから呼ぶメソッドを `link.xml` で保持します。WebGL 2を使い、スレッドは無効です。初期メモリは256 MB、上限は2048 MBです。[UnityのWeb配信設定](https://docs.unity3d.com/6000.6/Documentation/Manual/webgl-deploying.html)と[容量最適化の調査・手順](web-optimization.md)を参照してください。
 
 ## ブラウザーで確認する
 
 生成物をHTTPサーバー経由で開いてください。`index.html` のダブルクリックによる `file://` での起動は確認方法にしません。日本語の表示、移動、標本の回転、顕微鏡、解説、体験済みのサイン、自動見学を確認します。
 
-導入済みCLIでは `unity build run unity/VirtualMuseum --build-path unity/VirtualMuseum/Build/WebGL` でローカル確認用のサーバーを起動できます。確認終了後は、そのコマンドをCtrl+Cで停止します。
+ローカル確認には `Build/WebGL/` を配信ルートにした静的HTTPサーバーを使います。Node・Playwright・Chromeを利用できる場合は、`node work/test_progressive_web.cjs` が一時サーバーを起動してモバイル操作と段階読み込みを検査し、終了時にサーバーも停止します。
 
 マウス・キーボードと、移動パッド・タップ・ドラッグ・ピンチによるタッチ操作を用意しています。縦向きの狭い画面ではUnity内のUIを下部へまとめ、Web側も表示領域に合わせてキャンバスを伸縮します。観察から戻るときは、キーボードを使わず画面内の「戻る」を押せます。全画面に対応しないブラウザーでは通常表示のまま操作できます。
 
@@ -37,7 +37,7 @@ WebテンプレートはキャンバスのCSS寸法とタッチ機能の有無�
 
 ## 同じドメインのサービスワーカー
 
-展示室は `museum-sw.js` をページと同じディレクトリから登録します。公開先でのスコープは `/virtual-museum/` です。展示室専用ワーカーはリクエストに応答せず、ブラウザー標準の通信とキャッシュに任せます。
+展示室は `museum-sw.js` をページと同じディレクトリから登録します。公開先でのスコープは `/virtual-museum/` です。入口の小さなファイルと、選択後に取得した詳細模型をキャッシュします。Unity初期データを二重保存したり全模型を先読みしたりしません。[段階読み込みの構成・容量・検証](progressive-loading.md)を参照してください。
 
 初回アクセスで展示室のHTMLに届くよう、ドメイン直下のサイトでは Workbox の `navigateFallbackDenylist` に `/virtual-museum/` を含めます。ルート側のワーカーが有効なブラウザーから展示室を開き、開発者ツールで展示室のコントローラーが `/virtual-museum/museum-sw.js` になったことを確認します。
 
@@ -72,7 +72,7 @@ UnityのビルドはこのPCで行います。GitHub上では生成済みの静�
 EditorとUnity Pipelineに接続できる環境では、メニューの代わりに次の順で操作できます。再生は止めておきます。
 
 ```powershell
-unity command script eval 'MuseumWebBuild.Configure(); return true;' --project-path unity/VirtualMuseum --json
+unity command script eval 'MuseumWebBuild.Configure(); MuseumProgressiveBuild.Prepare(); UnityEditor.SceneManagement.EditorSceneManager.SaveScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene()); return true;' --project-path unity/VirtualMuseum --json
 unity command build run --target WebGL --output-path Build/WebGL --confirm --project-path unity/VirtualMuseum --json
 unity command build status --project-path unity/VirtualMuseum --json
 ```

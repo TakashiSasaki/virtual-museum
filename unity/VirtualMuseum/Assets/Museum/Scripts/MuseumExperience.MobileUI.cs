@@ -20,7 +20,7 @@ public partial class MuseumExperience
     bool CompactLandscape => CompactWidth>CompactHeight*1.2f;
     float CompactDockHeight => touring?(CompactLandscape?60:132):mode=="walk"?100:(CompactLandscape?60:112);
     float CompactDockTop => CompactHeight-CompactDockHeight;
-    bool TouchWorldInputBlocked => listOpen || helpOpen || answer!="" || compactMenuOpen;
+    bool TouchWorldInputBlocked => backyardOpen || guidePreparing || listOpen || helpOpen || answer!="" || compactMenuOpen;
     bool CompactNavigationVisible => TouchControlsVisible && !TouchWorldInputBlocked && !touring &&
         mode=="walk" && !ImmersionTransitioning;
     Rect TouchNavigationRect
@@ -32,7 +32,7 @@ public partial class MuseumExperience
     {
         get {bool pad=CompactLandscape && TouchControlsVisible;
             float left=pad && !navigationOnRight?TouchNavigationRect.xMax+12:12;
-            float right=pad && navigationOnRight?TouchNavigationRect.width+24:12;
+            float right=BackyardButtonVisible?180:pad && navigationOnRight?TouchNavigationRect.width+24:12;
             return new Rect(left,CompactHeaderHeight+8,CompactWidth-left-right,48);}
     }
     Rect CompactObservationRect
@@ -56,7 +56,10 @@ public partial class MuseumExperience
     {
         if(TouchWorldInputBlocked) return true;
         Vector2 point=GuiPoint(screen);
+        if(BackyardButtonVisible && BackyardButtonRect.Contains(point))return true;
         if(point.y<CompactHeaderHeight || point.y>=CompactDockTop) return true;
+        if(RoomStatusVisible && RoomStatusRect.Contains(point))return true;
+        if(mode!="walk" && (detailLoading || detailFailed) && DetailStatusRect.Contains(point))return true;
         if(CompactNavigationVisible && TouchNavigationContains(point)) return true;
         return mode=="walk" && !touring && !ImmersionActive && ReadyInteraction && CompactReadyRect.Contains(point);
     }
@@ -97,12 +100,13 @@ public partial class MuseumExperience
         // IMGUI draws back-to-front but handles input in call order. Disable the
         // covered controls so a tap on a sheet cannot activate a hidden button.
         GUI.enabled=baseEnabled && !TouchWorldInputBlocked;
+        DrawDetailStatus();
         GUI.DrawTexture(new Rect(0,0,uiWidth,CompactHeaderHeight),dark);
         bool observation=mode!="walk";
         if(observation && !touring)
         {
             if(CompactButton(new Rect(8,6,70,44),"戻る")) {CloseObservation();compactMenuOpen=false;}
-            GUI.Label(new Rect(88,8,Mathf.Max(80,uiWidth-174),40),mode=="scope"?"顕微鏡で観察":"標本を観察",compactLight);
+            GUI.Label(new Rect(88,8,Mathf.Max(80,uiWidth-174),40),mode=="scope"?"顕微鏡で観察":names[selected],compactLight);
         }
         else GUI.Label(new Rect(12,6,uiWidth-92,44),touring && CompactLandscape?
             (tourStep+1)+" / 6  "+tourTitles[tourStep]:"収蔵庫を、探検しよう。",compactLight);
@@ -126,6 +130,7 @@ public partial class MuseumExperience
         else if(listOpen && !touring) DrawCompactDestinations();
         else if(compactMenuOpen && !touring) DrawCompactMenu();
         else if(answer!="") DrawCompactGuide();
+        DrawBackyard();
         GUI.matrix=previousMatrix;
     }
 
@@ -257,9 +262,9 @@ public partial class MuseumExperience
     {
         Rect area=CompactPanel("目的地へ移動",out bool close);
         if(close)listOpen=false;
-        float height=(SpecimenCount+2)*62;
+        float height=(RoomSpecimenCount+2)*62;
         BeginCompactScroll(area,height,ref compactListScroll);
-        for(int i=0;i<SpecimenCount+2;i++)
+        for(int i=0;i<RoomSpecimenCount+2;i++)
             if(CompactButton(new Rect(0,i*62,area.width-20,52),ListDestinationLabel(i)))Jump(ListDestination(i));
         EndCompactScroll(area,height,ref compactListScroll);
     }
@@ -285,24 +290,7 @@ public partial class MuseumExperience
         EndCompactScroll(area,height,ref compactMenuScroll);
     }
 
-    void DrawCompactGuide()
-    {
-        Rect area=CompactPanel("アイモナイト君の解説",out bool close);
-        if(close)answer="";
-        float width=area.width-20;
-        float answerHeight=compactBody.CalcHeight(new GUIContent(answer),width)+12;
-        float height=answerHeight+(touring?0:218);
-        BeginCompactScroll(area,height,ref compactGuideScroll);
-        GUI.Label(new Rect(0,0,width,answerHeight),answer,compactBody);
-        if(!touring)
-        {
-            GUI.Label(new Rect(0,answerHeight,width,28),"質問を選んでみよう",compactSmall);
-            for(int i=0;i<3;i++)
-                if(CompactButton(new Rect(0,answerHeight+34+i*60,width,52),new[]{"本物の標本？","顕微鏡で何が見える？","操作を教えて"}[i]))
-                {Ask(i);compactGuideScroll=Vector2.zero;}
-        }
-        EndCompactScroll(area,height,ref compactGuideScroll);
-    }
+    void DrawCompactGuide() { DrawGuideBubble(); }
 
     void DrawCompactHelp()
     {

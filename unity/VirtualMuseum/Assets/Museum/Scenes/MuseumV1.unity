@@ -955,7 +955,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 50145913}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: 1, z: -0, w: -0.00000004371139}
   m_LocalPosition: {x: -2.4699998, y: 1.435, z: 11.8}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -15254,6 +15254,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MuseumExperience
   collection: {fileID: 11400000, guid: f682ad6501503ce40b44b1f047e96fd8, type: 2}
+  reserveCollection: {fileID: 11400000, guid: 1a230fa75ddab9c4b92dd7520b03cb17, type: 2}
   visitorCamera: {fileID: 336678725}
   visitor: {fileID: 1884880979}
   guide: {fileID: 1750805962}
@@ -19743,7 +19744,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2132243783}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: 1, z: -0, w: -0.00000004371139}
   m_LocalPosition: {x: -1.7299999, y: 1.435, z: 11.8}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0

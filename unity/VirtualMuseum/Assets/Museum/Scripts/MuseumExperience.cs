@@ -67,7 +67,8 @@ public partial class MuseumExperience : MonoBehaviour
         runtimeFrames++;
         var mouse=Mouse.current; var keys=Keyboard.current;
         if(keys!=null && keys.escapeKey.wasPressedThisFrame) {
-            CancelArrivalTurn();
+            backyardOpen=false;
+            CloseGuideConversation();CancelArrivalTurn();
             if(touring) StopTour(); else if(mode!="walk") CloseObservation(); else { listOpen=false; helpOpen=false; compactMenuOpen=false; answer=""; }
         }
         UpdateImmersion();
@@ -103,11 +104,11 @@ public partial class MuseumExperience : MonoBehaviour
                 if(move.sqrMagnitude>0) {CancelArrivalTurn();walking=false;selectionPinned=false;}
                 if(walking) {
                     var delta=walkTarget-visitor.transform.position;delta.y=0;
-                    if(delta.magnitude<.15f) walking=false; else move=delta.normalized;
+                    if(delta.magnitude<.15f) {walking=false;var focus=beaconWalkTarget;beaconWalkTarget=null;if(focus)BeginArrivalTurn(focus);} else move=delta.normalized;
                 }
                 Vector3 before=visitor.transform.position;
                 visitor.Move((move*2.4f+Vector3.down*2)*Time.deltaTime);
-                if(walking && move.sqrMagnitude>0 && (visitor.transform.position-before).sqrMagnitude<.000001f) {walking=false;notice="障害物があります。通路の床を選ぶか、展示一覧を使ってください。";}
+                if(walking && move.sqrMagnitude>0 && (visitor.transform.position-before).sqrMagnitude<.000001f) {walking=false;CancelArrivalTurn();notice="障害物があります。通路の床を選ぶか、展示一覧を使ってください。";}
             }
         }
         if(mouse!=null && !IgnoreGameplayMouse && !externalOverlay && !touring && !ImmersionTransitioning && (mode=="observe"||mode=="scope") && !OverUI(mouse.position.ReadValue())) {
@@ -123,7 +124,7 @@ public partial class MuseumExperience : MonoBehaviour
             }
         }
         UpdateArrivalTurn();
-        if(guide && answer=="" && mode=="walk" && !touring) {
+        if(guide && !guidePreparing && answer=="" && mode=="walk" && !touring) {
             npcPhase+=Time.deltaTime*.18f;
             Vector3 target=new Vector3(.25f+Mathf.Sin(npcPhase)*1.1f,0,6+Mathf.Cos(npcPhase)*2.0f);
             Vector3 away=target-visitor.transform.position;away.y=0;
@@ -132,23 +133,30 @@ public partial class MuseumExperience : MonoBehaviour
             Vector3 delta=target-guide.position;delta.y=0;
             if(delta.magnitude>.02f) guide.rotation=Quaternion.Slerp(guide.rotation,Quaternion.LookRotation(delta),Time.deltaTime*3);
             guide.position=Vector3.MoveTowards(guide.position,target,Time.deltaTime*.65f);
-        } else if(guide) {
+        } else if(guide && !guidePreparing) {
             Vector3 delta=visitor.transform.position-guide.position;delta.y=0;
             if(delta.sqrMagnitude>.01f) guide.rotation=Quaternion.Slerp(guide.rotation,Quaternion.LookRotation(delta),Time.deltaTime*3);
         }
+        UpdateGuideConversation();
     }
 
     bool OverUI(Vector2 screen)
     {
+        if(backyardOpen)return true;
+        if(guidePreparing || answer!="")return true;
         if(CompactUI) return CompactOverUI(screen);
         float s=Mathf.Min(Screen.width/1440f,Screen.height/810f);float offset=(Screen.width-1440*s)/2;
         Vector2 p=new Vector2((screen.x-offset)/s,(Screen.height-screen.y)/s);
+        if(BackyardButtonVisible && BackyardButtonRect.Contains(p))return true;
+        if(RoomStatusVisible && RoomStatusRect.Contains(p))return true;
+        if(mode!="walk" && (detailLoading || detailFailed) && DetailStatusRect.Contains(p))return true;
         return p.y<105 || p.y>uiHeight-100 || p.x>uiWidth-375 || (listOpen && p.x<350) || helpOpen || answer!="";
     }
     public void Jump(int index)
     {
         if(index<0 || index>=destinations.Length || !destinations[index])return;
-        CancelArrivalTurn();CloseObservationImmediately();answer="";walking=false;
+        CloseGuideConversation();CancelArrivalTurn();CloseObservationImmediately();answer="";walking=false;
+        backyardOpen=false;
         visitor.enabled=false; visitor.transform.position=destinations[index].position; visitor.enabled=true;
         yaw=visitor.transform.eulerAngles.y;
         int specimen=SpecimenForDestination(index);
@@ -160,7 +168,7 @@ public partial class MuseumExperience : MonoBehaviour
     public void Observe(int index)
     {
         if(specimenModels==null || index<0 || index>=specimenModels.Length) return;
-        CancelArrivalTurn();selected=index;walking=false;answer="";listOpen=false;mode="observe";
+        CloseGuideConversation();CancelArrivalTurn();selected=index;walking=false;answer="";listOpen=false;mode="observe";
         PrepareHeldSpecimen(index);
         BeginImmersion(ExhibitFocus(index));
         observations++;
@@ -168,22 +176,21 @@ public partial class MuseumExperience : MonoBehaviour
     public void Microscope() { Microscope(null); }
     public void Microscope(MicroscopeStation station)
     {
-        CancelArrivalTurn();ScopeImage(selected);
+        CloseGuideConversation();CancelArrivalTurn();ScopeImage(selected);
         if(!held) { PrepareHeldSpecimen(selected); observations++; }
         walking=false;answer="";listOpen=false;mode="scope";
         observedMicroscope=ResolveMicroscope(station);
+        PrioritizeRoom(observedMicroscope);
         BeginImmersion(observedMicroscope?InteractionPoint(observedMicroscope):ExhibitFocus(selected));
         scopeZoom=1;scopePan=new Vector2(.5f,.5f);microscopeVisits++;
     }
     public void CloseObservation()
     {
+        CancelDetailRequest();
         mode="walk";walking=false;
         if(!ImmersionActive) ReleaseHeldSpecimen();
     }
-    public void Talk() {
-        CancelArrivalTurn();walking=false;answer=descriptions[selected];
-        if(guide) RecordExperience(guide.GetComponent<GuideMarker>());
-    }
+    public void Talk() { BeginGuideConversation(); }
     public void Ask(int index)
     {
         questions++;
@@ -201,7 +208,7 @@ public partial class MuseumExperience : MonoBehaviour
     }
     void ApplyTourStep()
     {
-        tourElapsed=0;CloseObservation();answer="";
+        guidePreparing=false;tourElapsed=0;CloseObservation();answer="";
         tourDestination=new[]{4,0,1,3,2,4}[tourStep];
         Vector3 p=visitor.transform.position,goal=destinations[tourDestination].position;
         tourRoute=new[]{new Vector3(0,p.y,p.z),new Vector3(0,p.y,goal.z),new Vector3(goal.x,p.y,goal.z)};
@@ -226,7 +233,7 @@ public partial class MuseumExperience : MonoBehaviour
         visitor.transform.rotation=Quaternion.Slerp(visitor.transform.rotation,Quaternion.LookRotation(delta),Time.deltaTime*2);
         visitorCamera.transform.localRotation=Quaternion.Slerp(visitorCamera.transform.localRotation,Quaternion.identity,Time.deltaTime*2);
     }
-    public void StopTour() {touring=false;tourPaused=false;tourMoving=false;CloseObservationImmediately();answer="";walking=false;yaw=visitor.transform.eulerAngles.y;}
+    public void StopTour() {guidePreparing=false;touring=false;tourPaused=false;tourMoving=false;CloseObservationImmediately();answer="";walking=false;yaw=visitor.transform.eulerAngles.y;}
     void ClampPan() {float r=.5f/scopeZoom;scopePan.x=Mathf.Clamp(scopePan.x,r,1-r);scopePan.y=Mathf.Clamp(scopePan.y,r,1-r);}
     void ResetView() {zoom=1;if(held) {held.transform.localRotation=initialRotation;held.transform.localScale=Vector3.one;}scopeZoom=1;scopePan=new Vector2(.5f,.5f);}
 
@@ -252,6 +259,7 @@ public partial class MuseumExperience : MonoBehaviour
         compactMenuOpen=false;
         SetupStyles();float scale=Mathf.Min(Screen.width/1440f,Screen.height/810f);uiWidth=1440;uiHeight=Screen.height/scale;
         GUI.matrix=Matrix4x4.TRS(new Vector3((Screen.width-1440*scale)/2,0,0),Quaternion.identity,new Vector3(scale,scale,1));
+        bool guideUiEnabled=GUI.enabled;GUI.enabled=guideUiEnabled && !guidePreparing && answer=="" && !backyardOpen;
         GUI.DrawTexture(new Rect(0,0,1440,96),dark);
         Label(30,14,750,26,"EHIME UNIVERSITY MUSEUM  /  VIRTUAL COLLECTION",subtitleStyle);
         Label(30,39,850,46,"収蔵庫を、探検しよう。",darkTextStyle);
@@ -259,6 +267,7 @@ public partial class MuseumExperience : MonoBehaviour
         if(Button(1260,53,150,"操作ガイド",false,32)) {helpOpen=!helpOpen;walking=false;}
 
         DrawImmersiveObservation();
+        DrawDetailStatus();
         DrawNearbyPrompt();
 
         GUI.DrawTexture(new Rect(1065,108,355,uiHeight-220),panel);
@@ -302,16 +311,9 @@ public partial class MuseumExperience : MonoBehaviour
             Label(725,uiHeight-78,690,30,(tourStep+1)+" / 6   "+tourTitles[tourStep],darkTextStyle);
             GUI.DrawTexture(new Rect(730,uiHeight-31,650*Mathf.Clamp01(tourElapsed/tourDurations[tourStep]),4),accent);
         }
-        if(answer!="") {
-            GUI.DrawTexture(new Rect(100,150,900,uiHeight-275),panel);
-            Label(132,177,820,40,"アイモナイト君の展示ガイド",titleStyle);
-            Label(132,239,830,175,answer,bodyStyle);
-            Label(132,uiHeight-335,800,25,"よくある質問（用意した回答を表示します）",smallStyle);
-            if(!touring) {
-                for(int i=0;i<3;i++) if(Button(132+i*277,uiHeight-295,264,new[]{"本物の標本？","顕微鏡で何が見える？","操作を教えて"}[i])) Ask(i);
-                if(Button(132,uiHeight-225,820,"会話を閉じる",true))answer="";
-            }
-        }
+        GUI.enabled=guideUiEnabled;
+        DrawBackyard();
+        if(answer!="") DrawGuideBubble();
         if(helpOpen) {
             GUI.DrawTexture(new Rect(220,140,980,uiHeight-260),panel);
             Label(260,174,900,55,"探検のしかた",titleStyle);

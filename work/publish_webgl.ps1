@@ -38,6 +38,9 @@ function Assert-WorkspacePath([string]$Path) {
 }
 
 function Test-PublicationPath([string]$Path) {
+    if ($Path -in @('Content/catalog.json','Content/room.json')) { return $true }
+    if ($Path -cmatch '^Content/room-[a-z0-9-]+-[a-f0-9]{32}\.bundle$') { return $true }
+    if ($Path -cmatch '^Content/specimen-[0-9]{2}-[a-f0-9]{32}\.bundle$') { return $true }
     if ($Path -in @('index.html', 'museum.css', 'museum-sw.js', 'favicon.svg', 'manifest.webmanifest', '.nojekyll', 'FONT-LICENSE.txt',
         'THIRD-PARTY-NOTICES.txt', 'publication.json')) { return $true }
     if ($Path -cmatch '^Build/[A-Za-z0-9_.-]+\.(data|wasm|js)(\.unityweb|\.gz|\.br)?$') { return $true }
@@ -74,6 +77,10 @@ if (@(Invoke-Git @('-C', $repoRoot, 'status', '--porcelain=v1', '--untracked-fil
 }
 
 $files = @(Get-BuildFiles)
+if ((Get-Content -LiteralPath (Join-Path $buildRoot 'index.html') -Raw) -match '__MUSEUM_' -or
+    (Get-Content -LiteralPath (Join-Path $buildRoot 'museum-sw.js') -Raw) -match '__MUSEUM_') {
+    throw 'Web build has not been finalized. Run MuseumWebBuild.FinalizeOutput() first.'
+}
 if (!$files.Count) { throw 'The Web build directory is empty.' }
 foreach ($required in @('index.html', 'museum-sw.js', 'favicon.svg', 'manifest.webmanifest', 'FONT-LICENSE.txt', 'THIRD-PARTY-NOTICES.txt')) {
     if ($required -notin $files.Relative) { throw "Required publication file is missing: $required. Run MuseumWebBuild.FinalizeOutput()." }
@@ -81,6 +88,28 @@ foreach ($required in @('index.html', 'museum-sw.js', 'favicon.svg', 'manifest.w
 foreach ($pattern in @('^Build/.+\.wasm(\.unityweb|\.gz|\.br)?$', '^Build/.+\.data(\.unityweb|\.gz|\.br)?$',
     '^Build/.+\.framework\.js(\.unityweb|\.gz|\.br)?$', '^Build/.+\.loader\.js$')) {
     if (!@($files.Relative | Where-Object { $_ -match $pattern }).Count) { throw "Incomplete Unity build: missing $pattern" }
+}
+$contentCatalogPath = Join-Path $buildRoot 'Content/catalog.json'
+if (!(Test-Path -LiteralPath $contentCatalogPath)) { throw 'Progressive content catalog is missing.' }
+$contentCatalog = Get-Content -LiteralPath $contentCatalogPath -Raw | ConvertFrom-Json
+if ($contentCatalog.version -ne 1 -or !$contentCatalog.entries.Count) { throw 'Invalid progressive content catalog.' }
+foreach ($entry in $contentCatalog.entries) {
+    if ($entry.file -cnotmatch '^specimen-[0-9]{2}-[a-f0-9]{32}\.bundle$') { throw 'Invalid content bundle name.' }
+    $bundlePath = Join-Path $buildRoot ('Content/' + $entry.file)
+    if (!(Test-Path -LiteralPath $bundlePath) -or (Get-Item -LiteralPath $bundlePath).Length -ne $entry.bytes) {
+        throw "Missing or incomplete detail bundle: $($entry.file)"
+    }
+}
+$roomCatalogPath = Join-Path $buildRoot 'Content/room.json'
+if (!(Test-Path -LiteralPath $roomCatalogPath)) { throw 'Progressive room catalog is missing.' }
+$roomCatalog = Get-Content -LiteralPath $roomCatalogPath -Raw | ConvertFrom-Json
+if ($roomCatalog.version -ne 1 -or !$roomCatalog.entries.Count) { throw 'Invalid progressive room catalog.' }
+foreach ($entry in $roomCatalog.entries) {
+    if ($entry.file -cnotmatch '^room-[a-z0-9-]+-[a-f0-9]{32}\.bundle$') { throw 'Invalid room bundle name.' }
+    $bundlePath = Join-Path $buildRoot ('Content/' + $entry.file)
+    if (!(Test-Path -LiteralPath $bundlePath) -or (Get-Item -LiteralPath $bundlePath).Length -ne $entry.bytes) {
+        throw "Missing or incomplete room bundle: $($entry.file)"
+    }
 }
 $origin = (Invoke-Git @('-C', $repoRoot, 'remote', 'get-url', 'origin')).Trim()
 if ($origin -notmatch '^(https://github\.com/|git@github\.com:)(?<owner>[A-Za-z0-9_.-]+)/(?<repo>[A-Za-z0-9_.-]+?)(\.git)?$') {

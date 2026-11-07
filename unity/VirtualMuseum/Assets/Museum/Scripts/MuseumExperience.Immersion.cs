@@ -78,10 +78,12 @@ public partial class MuseumExperience
         initialRotation=held.transform.localRotation;
         specimenCamera.gameObject.SetActive(true);
         observedExhibit=FindExhibit(index);
+        RequestDetail(index);
     }
 
     void ReleaseHeldSpecimen()
     {
+        CancelDetailRequest();
         if(held) Destroy(held);
         held=null;
         observedExhibit=null;observedMicroscope=null;
@@ -163,6 +165,7 @@ public partial class MuseumExperience
         // changes inside immersion. Preparing a hidden specimen is not a visit.
         if(!closing && immersionProgress>=1f) {
             if(mode=="observe" && microscopeBlend<=.001f) RecordExperience(observedExhibit);
+            if(mode=="observe" && microscopeBlend<=.001f && viewingBackyard)backyardSeen.Add(selected);
             else if(mode=="scope" && microscopeBlend>=.999f) RecordExperience(observedMicroscope);
         }
         if(closing && immersionProgress<=0) CloseObservationImmediately();
@@ -178,6 +181,7 @@ public partial class MuseumExperience
         immersionActive=false;immersionProgress=0;microscopeBlend=0;
         mode="walk";walking=false;
         ReleaseHeldSpecimen();
+        ReturnFromBackyardObservation();
     }
 
     void UpdateNearbyInteraction(Keyboard keys)
@@ -254,16 +258,21 @@ public partial class MuseumExperience
 
     void OnDisable()
     {
-        CancelArrivalTurn();CancelTouchGestures();
+        CloseGuideConversation();CancelArrivalTurn();CancelTouchGestures();
         if(enhancedTouchOwned) {EnhancedTouchSupport.Disable();enhancedTouchOwned=false;}
         CloseObservationImmediately();
     }
 
     void OnDestroy()
     {
+        ReleaseDetailModels();
+        if(runtimeCollection)Destroy(runtimeCollection);
+        if(backyardGlass)Destroy(backyardGlass);
+        if(backyardPanel)Destroy(backyardPanel);
         if(scopeTextures!=null)foreach(var texture in scopeTextures)if(texture)Destroy(texture);
         ReleaseFonts();
         ReleaseTouchNavigation();
+        if(guideTail)Destroy(guideTail);
         if(microscopeVignette) Destroy(microscopeVignette);
     }
 }

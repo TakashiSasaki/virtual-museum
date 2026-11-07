@@ -31,11 +31,12 @@
           <div id="entry-actions">
             <button id="start-button" class="primary-button" type="button">展示室に入る <span aria-hidden="true">↗</span></button>
             <p class="device-note"><span class="pointer-copy">キーボード・マウスで自由に見学</span><span class="touch-copy">タッチで移動・観察できます。縦向きのままでどうぞ。</span></p>
+            <p class="device-note">初回 約__MUSEUM_INITIAL_MB__ MB。模型の詳細は、選んだ分だけ読み込みます。</p>
           </div>
           <div id="loading" hidden aria-live="polite" aria-atomic="true">
             <div class="loading-label"><span id="loading-message">展示室を準備しています</span><span id="progress-text">0%</span></div>
             <progress id="load-progress" max="100" value="0" aria-label="展示室の読み込み"></progress>
-            <p class="device-note">初回の読み込みには少し時間がかかります。</p>
+            <p class="device-note">先に展示室と簡易模型を準備しています。詳細は観察時に読み込みます。</p>
           </div>
           <div id="error-panel" hidden role="alert">
             <p id="error-message"></p>
@@ -78,6 +79,7 @@
         <div><dt>解説・すばやい移動・自動見学</dt><dd>「移動」で目的地へ。「メニュー」から解説・自動見学を選べます。紫色のサインでも解説を開けます。</dd></div>
       </dl>
       <p>体験した場所のサインにはチェックが付きます。再び観察することもできます。</p>
+      <p>画面上部の「バックヤード」から、未展示の模型も一覧で選んで観察できます。</p>
     </aside>
   </main>
   <script>

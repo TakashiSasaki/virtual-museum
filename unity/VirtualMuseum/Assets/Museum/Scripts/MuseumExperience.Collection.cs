@@ -4,13 +4,15 @@ using UnityEngine;
 public partial class MuseumExperience
 {
     public MuseumCollection collection;
+    public MuseumCollection reserveCollection;
     int collectionPage;
     bool selectionPinned;
     int SpecimenCount => specimenModels.Length;
+    int RoomSpecimenCount => collection && collection.exhibitionCount>0?collection.exhibitionCount:SpecimenCount;
     int DestinationForSpecimen(int index) => index<3?index:index+2;
     int SpecimenForDestination(int index) => index<3?index:index>=5?index-2:-1;
-    int ListDestination(int slot) => slot<SpecimenCount?DestinationForSpecimen(slot):slot==SpecimenCount?3:4;
-    string ListDestinationLabel(int slot) => slot<SpecimenCount?(slot+1).ToString("00")+"  "+names[slot]:slot==SpecimenCount?"観察台・顕微鏡":"入口・全体を見渡す";
+    int ListDestination(int slot) => slot<RoomSpecimenCount?DestinationForSpecimen(slot):slot==RoomSpecimenCount?3:4;
+    string ListDestinationLabel(int slot) => slot<RoomSpecimenCount?(slot+1).ToString("00")+"  "+names[slot]:slot==RoomSpecimenCount?"観察台・顕微鏡":"入口・全体を見渡す";
     string ScopeCaption => collection && selected<collection.entries.Length?collection.entries[selected].microscopeCaption:"拡大資料";
 
     void FaceSelectedSpecimen()
@@ -25,6 +27,16 @@ public partial class MuseumExperience
     void LoadCollection()
     {
         if(!collection || collection.entries==null || collection.entries.Length==0) return;
+        if(reserveCollection && collection.exhibitionCount==0)
+        {
+            var combined=ScriptableObject.CreateInstance<MuseumCollection>();
+            combined.exhibitionCount=collection.entries.Length;
+            combined.entries=new MuseumCollection.Entry[collection.entries.Length+reserveCollection.entries.Length];
+            Array.Copy(collection.entries,combined.entries,collection.entries.Length);
+            Array.Copy(reserveCollection.entries,0,combined.entries,collection.entries.Length,reserveCollection.entries.Length);
+            combined.reserveThumbnails=reserveCollection.reserveThumbnails;
+            collection=combined;runtimeCollection=combined;
+        }
         names=Array.ConvertAll(collection.entries,e=>e.title);
         english=Array.ConvertAll(collection.entries,e=>e.english);
         descriptions=Array.ConvertAll(collection.entries,e=>e.description);
@@ -43,14 +55,14 @@ public partial class MuseumExperience
     void DrawCollectionDestinations()
     {
         const int pageSize=5;
-        int pages=Mathf.CeilToInt((SpecimenCount+2)/(float)pageSize);
+        int pages=Mathf.CeilToInt((RoomSpecimenCount+2)/(float)pageSize);
         collectionPage=Mathf.Clamp(collectionPage,0,pages-1);
         GUI.DrawTexture(new Rect(20,110,360,470),panel);
         Label(40,126,320,45,"展示一覧・移動",bodyStyle);
         for(int row=0;row<pageSize;row++)
         {
             int slot=collectionPage*pageSize+row;
-            if(slot>=SpecimenCount+2) break;
+            if(slot>=RoomSpecimenCount+2) break;
             if(Button(36,180+row*61,328,ListDestinationLabel(slot)))Jump(ListDestination(slot));
         }
         if(Button(36,500,92,"前へ"))collectionPage=Mathf.Max(0,collectionPage-1);

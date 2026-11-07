@@ -30,7 +30,7 @@ public partial class MuseumExperience
     bool enhancedTouchOwned;
     Vector2 uiTapStart, uiTapEnd;
     int uiTapFrame=-1;
-    string PanelIdentity => mode+"|"+listOpen+"|"+helpOpen+"|"+compactMenuOpen+"|"+(answer!="")+"|"+touring;
+    string PanelIdentity => mode+"|"+listOpen+"|"+helpOpen+"|"+compactMenuOpen+"|"+(answer!="")+"|"+touring+"|"+backyardOpen;
 
     bool TouchButton(Rect rect)
     {

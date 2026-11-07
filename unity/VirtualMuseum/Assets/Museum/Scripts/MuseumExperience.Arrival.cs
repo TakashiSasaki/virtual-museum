@@ -3,11 +3,22 @@ using UnityEngine;
 public partial class MuseumExperience
 {
     bool arrivalTurning;
+    Component beaconWalkTarget;
     float arrivalElapsed, arrivalYaw, arrivalPitch, arrivalEndYaw, arrivalEndPitch;
     Component arrivalTarget;
     bool activateAfterTurn;
 
-    void CancelArrivalTurn() { arrivalTurning=false;arrivalTarget=null;activateAfterTurn=false; }
+    void CancelArrivalTurn() { beaconWalkTarget=null; arrivalTurning=false;arrivalTarget=null;activateAfterTurn=false; }
+
+    public void WalkToBeacon(Component target,Vector3 approach)
+    {
+        if(!target || !WayfindingVisible)return;
+        PrioritizeRoom(target);
+        CancelArrivalTurn();CancelTouchGestures();
+        beaconWalkTarget=target;walkTarget=approach;walkTarget.y=visitor.transform.position.y;walking=true;
+        if(target is MuseumExhibit exhibit){selected=exhibit.index;selectionPinned=true;}
+        notice="ビーコンへ移動しています。到着すると対象へ向き直ります。";
+    }
 
     void BeginArrivalTurn(Component target, bool activate=false, float fallbackYaw=0)
     {
