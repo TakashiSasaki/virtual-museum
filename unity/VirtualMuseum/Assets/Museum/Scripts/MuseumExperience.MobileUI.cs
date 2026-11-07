@@ -26,12 +26,14 @@ public partial class MuseumExperience
     Rect TouchNavigationRect
     {
         get {float size=CompactLandscape?Mathf.Clamp(CompactDockTop-CompactHeaderHeight-16,64,112):112;
-            return new Rect(12,CompactDockTop-size-8,size,size);}
+            return new Rect(navigationOnRight?CompactWidth-size-12:12,CompactDockTop-size-8,size,size);}
     }
     Rect CompactReadyRect
     {
-        get {float left=CompactLandscape && TouchControlsVisible?TouchNavigationRect.xMax+12:12;
-            return new Rect(left,CompactHeaderHeight+8,CompactWidth-left-12,48);}
+        get {bool pad=CompactLandscape && TouchControlsVisible;
+            float left=pad && !navigationOnRight?TouchNavigationRect.xMax+12:12;
+            float right=pad && navigationOnRight?TouchNavigationRect.width+24:12;
+            return new Rect(left,CompactHeaderHeight+8,CompactWidth-left-right,48);}
     }
     Rect CompactObservationRect
     {
@@ -55,7 +57,7 @@ public partial class MuseumExperience
         if(TouchWorldInputBlocked) return true;
         Vector2 point=GuiPoint(screen);
         if(point.y<CompactHeaderHeight || point.y>=CompactDockTop) return true;
-        if(CompactNavigationVisible && TouchNavigationRect.Contains(point)) return true;
+        if(CompactNavigationVisible && TouchNavigationContains(point)) return true;
         return mode=="walk" && !touring && !ImmersionActive && ReadyInteraction && CompactReadyRect.Contains(point);
     }
 
@@ -266,8 +268,10 @@ public partial class MuseumExperience
     {
         Rect area=CompactPanel("見学メニュー",out bool close);
         if(close)compactMenuOpen=false;
-        const float height=280;
         float width=area.width-20;
+        string padHelp="片手：上下で前後、左右で旋回。斜めで歩きながら曲がります。中央を0.6秒長押しで見回しへ。中央へ戻して待つと歩行へ戻ります。指を離すと停止します。\n両手：パッドで移動し、もう1本の指で景色をドラッグ。片手モードでも2本目の指で見回せます。";
+        float textHeight=compactSmall.CalcHeight(new GUIContent(padHelp),width);
+        float height=324+textHeight;
         BeginCompactScroll(area,height,ref compactMenuScroll);
         if(CompactButton(new Rect(0,0,width,52),"アイモナイト君の解説",true))
         {compactMenuOpen=false;compactGuideScroll=Vector2.zero;Talk();}
@@ -275,7 +279,9 @@ public partial class MuseumExperience
         {compactMenuOpen=false;StartTour();}
         if(CompactButton(new Rect(0,124,width,52),"操作ガイド"))
         {compactMenuOpen=false;helpOpen=true;compactHelpScroll=Vector2.zero;}
-        GUI.Label(new Rect(0,190,width,80),"愛媛大学ミュージアム\nプロトタイプ 01\n標本・拡大図は試作用です。",compactSmall);
+        if(CompactButton(new Rect(0,186,width,52),oneHandNavigation?"操作：片手（前後＋旋回）":"操作：両手（移動＋スワイプ）"))SetOneHandNavigation(!oneHandNavigation);
+        if(CompactButton(new Rect(0,248,width,52),navigationOnRight?"パッド位置：右":"パッド位置：左"))SetNavigationSide(!navigationOnRight);
+        GUI.Label(new Rect(0,312,width,textHeight),padHelp,compactSmall);
         EndCompactScroll(area,height,ref compactMenuScroll);
     }
 
@@ -303,7 +309,7 @@ public partial class MuseumExperience
         Rect area=CompactPanel("探検のしかた",out bool close);
         if(close)helpOpen=false;
         float width=area.width-20;
-        string instructions="歩く\n左下の移動パッドを押して動かします。通路の床をタップして歩くこともできます。\n\n見回す\n展示室を1本指でドラッグします。\n\n観察する\n展示や光るサインをタップ。「標本を見る」からも開けます。模型は1本指で回転、2本指のピンチで拡大・縮小。＋／−ボタンも使えます。\n\n顕微鏡\n「顕微鏡で見る」を選びます。拡大後は1本指で観察位置を動かせます。上の「戻る」で展示室へ。\n\nすぐに移動・自動見学\n「移動」から目的地へ。「メニュー」から解説や自動見学を開きます。\n\nPCでは十字キー / WASD、右ドラッグ、ホイール、E / Escも使えます。\n\n標本と拡大図は試作用です。質問は用意された選択肢から選びます。";
+        string instructions="歩く\n片手モードではパッドの上下で前後、左右で旋回、斜めで歩きながら曲がれます。中央を0.6秒長押しすると移動を止めて上下左右を見回せます。中央へ戻して待つと歩行へ。指を離すと停止します。「メニュー」で両手モードやパッドの左右を選べます。通路の床をタップして歩くこともできます。\n\n見回す\n展示室を1本指でドラッグします。\n\n観察する\n展示や光るサインをタップ。「標本を見る」からも開けます。模型は1本指で回転、2本指のピンチで拡大・縮小。＋／−ボタンも使えます。\n\n顕微鏡\n「顕微鏡で見る」を選びます。拡大後は1本指で観察位置を動かせます。上の「戻る」で展示室へ。\n\nすぐに移動・自動見学\n「移動」から目的地へ。「メニュー」から解説や自動見学を開きます。\n\nPCでは十字キー / WASD、右ドラッグ、ホイール、E / Escも使えます。\n\n標本と拡大図は試作用です。質問は用意された選択肢から選びます。";
         float height=compactBody.CalcHeight(new GUIContent(instructions),width)+12;
         BeginCompactScroll(area,height,ref compactHelpScroll);
         GUI.Label(new Rect(0,0,width,height),instructions,compactBody);

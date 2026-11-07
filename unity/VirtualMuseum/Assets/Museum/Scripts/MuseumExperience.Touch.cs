@@ -17,6 +17,8 @@ public partial class MuseumExperience
         public string mode;
         public string panel;
         public bool dragged;
+        public bool padLook,holdArmed=true;
+        public float centerHeld;
     }
     readonly Dictionary<int, Gesture> gestures = new();
     WebViewport webViewport;
@@ -62,27 +64,29 @@ public partial class MuseumExperience
     void OnEnable()
     {
         EnhancedTouchSupport.Enable();enhancedTouchOwned=true;
+        oneHandNavigation=PlayerPrefs.GetInt("Museum.OneHandNavigation",1)!=0;
+        navigationOnRight=PlayerPrefs.GetInt("Museum.NavigationOnRight",0)!=0;
     }
 
     void OnApplicationFocus(bool focused)
     {
-        if(!focused) {walking=false;CancelTouchGestures();}
+        if(!focused) {CancelArrivalTurn();walking=false;CancelTouchGestures();}
     }
 
     void CancelTouchGestures()
     {
         foreach(var gesture in gestures.Values) gesture.use=FingerUse.Ignored;
-        touchMovement=Vector2.zero;pinchA=pinchB=-1;previousPinch=0;uiTapFrame=-1;
+        touchMovement=Vector2.zero;navigationDeflection=Vector2.zero;navigationLooking=false;navigationHoldProgress=0;pinchA=pinchB=-1;previousPinch=0;uiTapFrame=-1;
     }
 
     void UpdateTouchInput()
     {
-        touchMovement=Vector2.zero;
+        touchMovement=Vector2.zero;navigationDeflection=Vector2.zero;navigationLooking=false;navigationHoldProgress=0;
         var touches=Touch.activeTouches;
         if(touches.Count==0) {gestures.Clear();pinchA=pinchB=-1;return;}
         touchSeen=true;suppressMouseUntil=Time.unscaledTime+.45f;
         bool blocked=externalOverlay || TouchWorldInputBlocked || touring || ImmersionTransitioning;
-        int worldCount=0;
+        int worldCount=0;Gesture padGesture=null;Vector2 padInput=Vector2.zero;
         Touch first=default, second=default;
         foreach(var touch in touches)
         {
@@ -93,7 +97,11 @@ public partial class MuseumExperience
                 var use=FingerUse.Ignored;
                 if(!externalOverlay)
                 {
-                    if(!blocked && mode=="walk" && !ImmersionActive && TouchNavigationRect.Contains(GuiPoint(position))) use=FingerUse.Walk;
+                    if(!blocked && mode=="walk" && !ImmersionActive && TouchNavigationContains(GuiPoint(position)))
+                    {
+                        bool padOwned=false;foreach(var existing in gestures.Values)if(existing.use==FingerUse.Walk)padOwned=true;
+                        use=padOwned?FingerUse.Ignored:FingerUse.Walk;
+                    }
                     else if(OverUI(position)) use=FingerUse.UI;
                     else if(!blocked) use=FingerUse.World;
                 }
@@ -120,8 +128,8 @@ public partial class MuseumExperience
             if(gesture.use==FingerUse.Walk)
             {
                 Vector2 offset=GuiPoint(position)-TouchNavigationRect.center;
-                touchMovement=Vector2.ClampMagnitude(new Vector2(offset.x,-offset.y)/(TouchNavigationRect.width*.35f),1);
-                if(touchMovement.magnitude<.12f) touchMovement=Vector2.zero;
+                padGesture=gesture;
+                padInput=Vector2.ClampMagnitude(new Vector2(offset.x,-offset.y)/(TouchNavigationRect.width*.35f),1);
             }
             else if(gesture.use==FingerUse.World)
             {
@@ -129,6 +137,7 @@ public partial class MuseumExperience
                 worldCount++;
             }
         }
+        if(padGesture!=null)ProcessNavigationPad(padInput,padGesture,worldCount>0);
         if(worldCount>=2)
         {
             foreach(var gesture in gestures.Values) if(gesture.use==FingerUse.World) gesture.dragged=true;
@@ -156,15 +165,15 @@ public partial class MuseumExperience
 
     void ApplyWorldDrag(Vector2 delta)
     {
-        if(mode=="walk")selectionPinned=false;
-        if(mode=="walk") {walking=false;yaw+=delta.x*.18f;pitch=Mathf.Clamp(pitch-delta.y*.18f,-60,60);}
+        if(mode=="walk"){CancelArrivalTurn();selectionPinned=false;}
+        if(mode=="walk") {walking=false;yaw-=delta.x*.18f;pitch=Mathf.Clamp(pitch+delta.y*.18f,-60,60);}
         else if(mode=="observe" && held) {held.transform.Rotate(Vector3.up,-delta.x*.45f,Space.World);held.transform.Rotate(Vector3.right,delta.y*.45f,Space.World);}
         else if(mode=="scope") {scopePan-=delta/Mathf.Max(100,CompactObservationRect.width)/scopeZoom;ClampPan();}
     }
 
     void ActivateWorldPoint(Vector2 position)
     {
-        selectionPinned=false;
+        CancelArrivalTurn();selectionPinned=false;
         Ray ray=visitorCamera.ScreenPointToRay(position);
         if(wayfinding && wayfinding.TryActivate(ray)) return;
         if(!Physics.Raycast(ray,out var hit,40)) return;
@@ -175,13 +184,4 @@ public partial class MuseumExperience
         else if(hit.collider.GetComponentInParent<GuideMarker>()) Talk();
     }
 
-    void DrawTouchNavigation()
-    {
-        Rect pad=TouchNavigationRect;
-        GUI.DrawTexture(pad,dark);
-        GUI.Label(new Rect(pad.x+8,pad.y+4,pad.width-16,22),"移動",compactLight);
-        var center=pad.center+new Vector2(touchMovement.x,-touchMovement.y)*pad.width*.27f;
-        GUI.DrawTexture(new Rect(center.x-19,center.y-19,38,38),accent);
-        if(pad.height>=96) GUI.Label(new Rect(pad.x+8,pad.yMax-24,pad.width-16,22),"スライド",compactLight);
-    }
 }

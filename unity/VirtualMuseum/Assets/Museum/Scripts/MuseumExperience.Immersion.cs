@@ -254,7 +254,7 @@ public partial class MuseumExperience
 
     void OnDisable()
     {
-        CancelTouchGestures();
+        CancelArrivalTurn();CancelTouchGestures();
         if(enhancedTouchOwned) {EnhancedTouchSupport.Disable();enhancedTouchOwned=false;}
         CloseObservationImmediately();
     }
@@ -263,6 +263,7 @@ public partial class MuseumExperience
     {
         if(scopeTextures!=null)foreach(var texture in scopeTextures)if(texture)Destroy(texture);
         ReleaseFonts();
+        ReleaseTouchNavigation();
         if(microscopeVignette) Destroy(microscopeVignette);
     }
 }

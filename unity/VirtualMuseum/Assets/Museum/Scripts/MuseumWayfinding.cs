@@ -257,10 +257,7 @@ public sealed class MuseumWayfinding : MonoBehaviour
             closest = distance; candidate = view;
         }
         if (candidate == null) return false;
-        if (candidate.landmark.target is MuseumExhibit exhibit) experience.Observe(exhibit.index);
-        else if (candidate.landmark.target is MicroscopeStation station) experience.Microscope(station);
-        else if (candidate.landmark.target is GuideMarker) experience.Talk();
-        else return false;
+        experience.ApproachInteraction(candidate.landmark.target);
         return true;
     }
 
