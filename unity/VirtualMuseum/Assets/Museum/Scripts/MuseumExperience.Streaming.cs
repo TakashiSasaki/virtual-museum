@@ -8,6 +8,13 @@ public partial class MuseumExperience
 {
     sealed class DetailModel {public AssetBundle bundle;public Mesh mesh;public int used;}
     readonly Dictionary<int,DetailModel> detailModels=new();
+    sealed class DisplayDetail
+    {
+        public MeshFilter filter;
+        public Mesh preview;
+        public Mesh detail;
+    }
+    readonly Dictionary<int,DisplayDetail> displayDetails=new();
     UnityWebRequest detailRequest;
     Coroutine detailRoutine;
     int detailGeneration,detailUseCounter;
@@ -22,6 +29,11 @@ public partial class MuseumExperience
     {
         CancelDetailRequest();
         if(!HasRemoteDetail(index))return;
+        if(displayDetails.TryGetValue(index,out var display))
+        {
+            ApplyDetailMesh(display.detail);
+            return;
+        }
         if(detailModels.TryGetValue(index,out var cached))
         {cached.used=++detailUseCounter;ApplyDetailMesh(cached.mesh);return;}
         detailLoading=true;detailProgress=0;
@@ -55,7 +67,7 @@ public partial class MuseumExperience
             if(bundle)bundle.Unload(true);
             detailFailed=true;yield break;
         }
-        detailModels[index]=new DetailModel {bundle=bundle,mesh=mesh,used=++detailUseCounter};
+        CacheDetail(index,bundle,mesh);
         if(held && selected==index && mode!="walk")ApplyDetailMesh(mesh);
         while(detailModels.Count>DetailMemoryLimit)
         {
@@ -64,6 +76,21 @@ public partial class MuseumExperience
             if(oldest<0)break;
             detailModels[oldest].bundle.Unload(true);detailModels.Remove(oldest);
         }
+    }
+
+    void CacheDetail(int index,AssetBundle bundle,Mesh mesh)
+    {
+        var exhibit=FindExhibit(index);
+        var filter=exhibit?exhibit.GetComponentInChildren<MeshFilter>():null;
+        if(filter)
+        {
+            displayDetails[index]=new DisplayDetail {filter=filter,preview=filter.sharedMesh,detail=mesh};
+            filter.sharedMesh=mesh;
+            // Keep the shared mesh for this visit. The container can be released.
+            bundle.Unload(false);
+            return;
+        }
+        detailModels[index]=new DetailModel {bundle=bundle,mesh=mesh,used=++detailUseCounter};
     }
 
     void ApplyDetailMesh(Mesh mesh)
@@ -88,6 +115,12 @@ public partial class MuseumExperience
         CancelDetailRequest();
         foreach(var model in detailModels.Values)if(model.bundle)model.bundle.Unload(true);
         detailModels.Clear();
+        foreach(var display in displayDetails.Values)
+        {
+            if(display.filter && display.filter.sharedMesh==display.detail)display.filter.sharedMesh=display.preview;
+            if(display.detail)Destroy(display.detail);
+        }
+        displayDetails.Clear();
     }
 
     Rect DetailStatusRect => CompactUI?new Rect(12,CompactHeaderHeight+34,uiWidth-24,44):new Rect(28,146,620,44);

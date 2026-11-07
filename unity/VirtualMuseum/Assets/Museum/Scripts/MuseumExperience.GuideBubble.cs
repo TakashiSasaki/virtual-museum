@@ -50,13 +50,16 @@ public partial class MuseumExperience
     {
         SetupCompactStyles();
         bool wide=uiWidth>uiHeight*1.2f;
-        float width=wide?Mathf.Min(420,uiWidth*.45f):Mathf.Min(420,uiWidth-24),top=CompactUI?64:108,bottom=CompactUI?CompactDockTop-8:uiHeight-108;
-        float height=Mathf.Min(360,bottom-top);
+        float width=wide?Mathf.Min(420,uiWidth*.6f):Mathf.Min(420,uiWidth-24);
+        float top=CompactUI?(wide?8:64):108;
+        float bottom=CompactUI?CompactDockTop-8:uiHeight-108;
+        const float menuHeight=210;
+        if(CompactUI && bottom-top<menuHeight)bottom=uiHeight-8;
+        float height=guideMenu?menuHeight:Mathf.Min(360,bottom-top);
         var marker=guide?guide.GetComponent<GuideMarker>():null;
         Vector3 screen=visitorCamera.WorldToScreenPoint(marker?GuideSpeechPoint():visitorCamera.transform.position+visitorCamera.transform.forward*2);
         Vector2 anchor=GuiPoint(screen);
         float x=wide?(anchor.x<uiWidth*.5f?uiWidth-width-12:12):Mathf.Clamp(anchor.x-width*.5f,12,uiWidth-width-12);
-        if(!wide)height=Mathf.Min(height,Mathf.Max(200,anchor.y-top-28));
         float y=wide?Mathf.Clamp(anchor.y-height*.5f,top,Mathf.Max(top,bottom-height)):Mathf.Clamp(anchor.y-height-28,top,Mathf.Max(top,bottom-height));
         var rect=new Rect(x,y,width,height);
         if(!guideTail)
@@ -66,33 +69,42 @@ public partial class MuseumExperience
             guideTail.SetPixels(pixels);guideTail.Apply(false,true);
         }
         var previous=GUI.color;
+        var previousBackground=GUI.backgroundColor;
+        GUI.backgroundColor=new Color(1,1,1,.55f);
         Vector2 tailBase=new Vector2(Mathf.Clamp(anchor.x,rect.x+20,rect.xMax-20),Mathf.Clamp(anchor.y,rect.y+16,rect.yMax-16));
         if(anchor.y>rect.yMax)tailBase.y=rect.yMax-2;
         else if(anchor.y<rect.y)tailBase.y=rect.y+2;
         else tailBase.x=anchor.x>rect.center.x?rect.xMax-2:rect.x+2;
         var direction=anchor-tailBase;float length=Mathf.Min(60,direction.magnitude);
         var center=tailBase+direction.normalized*length*.5f;
-        GUI.color=new Color(.96f,.97f,.91f,.98f);var matrix=GUI.matrix;
+        GUI.color=new Color(.96f,.97f,.91f,.84f);var matrix=GUI.matrix;
         GUIUtility.RotateAroundPivot(Mathf.Atan2(-direction.x,direction.y)*Mathf.Rad2Deg,center);
         GUI.DrawTexture(new Rect(center.x-14,center.y-length*.5f,28,length),guideTail);
         GUI.matrix=matrix;GUI.color=Color.white;
-        GUI.DrawTexture(new Rect(x+2,y+4,width,height),Texture2D.whiteTexture,ScaleMode.StretchToFill,true,0,new Color(0,.08f,.09f,.22f),0,18);
-        GUI.DrawTexture(rect,Texture2D.whiteTexture,ScaleMode.StretchToFill,true,0,new Color(.96f,.97f,.91f,.98f),0,18);
+        GUI.DrawTexture(new Rect(x+2,y+4,width,height),Texture2D.whiteTexture,ScaleMode.StretchToFill,true,0,new Color(0,.08f,.09f,.12f),0,18);
+        GUI.DrawTexture(rect,Texture2D.whiteTexture,ScaleMode.StretchToFill,true,0,new Color(.96f,.97f,.91f,.84f),0,18);
         GUI.Label(new Rect(x+16,y+10,width-100,32),"アイモナイト君",compactTitle);
-        if(CompactButton(new Rect(rect.xMax-76,y+7,64,36),"閉じる")){CloseGuideConversation();GUI.color=previous;return;}
+        if(CompactButton(new Rect(rect.xMax-76,y+7,64,36),"閉じる")){CloseGuideConversation();GUI.color=previous;GUI.backgroundColor=previousBackground;return;}
         var area=new Rect(x+14,y+52,width-28,height-66);
-        float textHeight=compactBody.CalcHeight(new GUIContent(answer),area.width-20)+12;
-        float contentHeight=textHeight+(guideMenu?184:54);
-        BeginCompactScroll(area,contentHeight,ref guideBubbleScroll);
-        GUI.Label(new Rect(0,0,area.width-20,textHeight),answer,compactBody);
         if(guideMenu)
         {
-            string[] choices={"この展示の解説","本物の標本？","顕微鏡で何が見える？","操作を教えて"};
-            for(int i=0;i<choices.Length;i++)if(CompactButton(new Rect(0,textHeight+i*46,area.width-20,40),choices[i],i==0))
+            GUI.Label(new Rect(area.x,area.y,area.width,28),"何を知りたいですか？",compactBody);
+            string[] choices={"この展示の解説","本物の標本？","顕微鏡の解説","操作を教えて"};
+            float buttonWidth=(area.width-8)/2;
+            for(int i=0;i<choices.Length;i++)if(CompactButton(new Rect(area.x+(i%2)*(buttonWidth+8),area.y+34+(i/2)*54,buttonWidth,48),choices[i]))
             {if(i==0)answer=descriptions[selected];else Ask(i-1);guideMenu=false;guideBubbleScroll=Vector2.zero;}
         }
-        else if(CompactButton(new Rect(0,textHeight,area.width-20,44),"ほかの質問を選ぶ",true))
-        {guideMenu=true;answer="何を知りたいですか？";guideBubbleScroll=Vector2.zero;}
-        EndCompactScroll(area,contentHeight,ref guideBubbleScroll);GUI.color=previous;
+        else
+        {
+            var textArea=new Rect(area.x,area.y,area.width,area.height-52);
+            float textHeight=compactBody.CalcHeight(new GUIContent(answer),textArea.width-20)+12;
+            BeginCompactScroll(textArea,textHeight,ref guideBubbleScroll);
+            GUI.Label(new Rect(0,0,textArea.width-20,textHeight),answer,compactBody);
+            EndCompactScroll(textArea,textHeight,ref guideBubbleScroll);
+            if(CompactButton(new Rect(area.x,area.yMax-44,area.width,44),"ほかの質問を選ぶ",true))
+            {guideMenu=true;answer="何を知りたいですか？";guideBubbleScroll=Vector2.zero;}
+        }
+        GUI.color=previous;
+        GUI.backgroundColor=previousBackground;
     }
 }

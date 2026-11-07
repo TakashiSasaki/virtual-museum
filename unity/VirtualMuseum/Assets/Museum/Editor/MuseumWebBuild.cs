@@ -57,7 +57,9 @@ public static class MuseumWebBuild
             scenes = new[] { ScenePath },
             locationPathName = OutputPath,
             target = BuildTarget.WebGL,
-            options = BuildOptions.DetailedBuildReport
+            // Scene processors read generated bundle names. Reprocess scenes so
+            // cached build copies cannot retain URLs from a previous preparation.
+            options = BuildOptions.DetailedBuildReport | BuildOptions.CleanBuildCache
         });
         if (report.summary.result != BuildResult.Succeeded)
             throw new InvalidOperationException("Web build failed: " + report.summary.result);
