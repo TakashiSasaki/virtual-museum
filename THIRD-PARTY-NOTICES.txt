@@ -1,4 +1,4 @@
-Noto Sans JP: SIL Open Font License 1.1. See FONT-LICENSE.txt.
+Museum JP Subset (derived from Noto Sans JP): SIL Open Font License 1.1. See FONT-LICENSE.txt.
 https://github.com/notofonts/noto-cjk
 
 Surface photographs (CC0):

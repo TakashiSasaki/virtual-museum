@@ -31,11 +31,12 @@
           <div id="entry-actions">
             <button id="start-button" class="primary-button" type="button">展示室に入る <span aria-hidden="true">↗</span></button>
             <p class="device-note"><span class="pointer-copy">キーボード・マウスで自由に見学</span><span class="touch-copy">タッチで移動・観察できます。縦向きのままでどうぞ。</span></p>
+            <p class="device-note">初回 約7.0 MB。模型の詳細は、選んだ分だけ読み込みます。</p>
           </div>
           <div id="loading" hidden aria-live="polite" aria-atomic="true">
             <div class="loading-label"><span id="loading-message">展示室を準備しています</span><span id="progress-text">0%</span></div>
             <progress id="load-progress" max="100" value="0" aria-label="展示室の読み込み"></progress>
-            <p class="device-note">初回の読み込みには少し時間がかかります。</p>
+            <p class="device-note">先に展示室と簡易模型を準備しています。詳細は観察時に読み込みます。</p>
           </div>
           <div id="error-panel" hidden role="alert">
             <p id="error-message"></p>
@@ -78,6 +79,7 @@
         <div><dt>解説・すばやい移動・自動見学</dt><dd>「移動」で目的地へ。「メニュー」から解説・自動見学を選べます。紫色のサインでも解説を開けます。</dd></div>
       </dl>
       <p>体験した場所のサインにはチェックが付きます。再び観察することもできます。</p>
+      <p>画面上部の「バックヤード」から、未展示の模型も一覧で選んで観察できます。</p>
     </aside>
   </main>
   <script>
@@ -153,9 +155,9 @@
       const buildUrl = "Build";
       const config = {
         arguments: [],
-        dataUrl: buildUrl + "/489350167984f11e82b2eeea12e21d15.data.unityweb",
-        frameworkUrl: buildUrl + "/38a1c5f89413cd4ab9812ed24ec19bea.framework.js.unityweb",
-        codeUrl: buildUrl + "/485726d4fe113d989077b0a65bd2521e.wasm.unityweb",
+        dataUrl: buildUrl + "/415497073b9e57559eaedf7f2bdfc0e9.data.unityweb",
+        frameworkUrl: buildUrl + "/c08b397ec40001b27fea6b6d7c74f435.framework.js.unityweb",
+        codeUrl: buildUrl + "/91032fa107b82196decb9e0caaaf0b7d.wasm.unityweb",
         streamingAssetsUrl: "StreamingAssets",
         fullscreenElementID: "museum-app",
         companyName: "Virtual Museum",
@@ -173,7 +175,7 @@
         entryActions.hidden = true;
         loading.hidden = false;
         const loader = document.createElement("script");
-        loader.src = buildUrl + "/5219df20eb78da5a3abed0e3146f5d56.loader.js";
+        loader.src = buildUrl + "/e5ec01c9d12af71da288c149d391192e.loader.js";
         loader.onerror = () => showError("The player loader could not be downloaded.");
         loader.onload = () => {
           createUnityInstance(canvas, config, (progress) => {
