@@ -153,9 +153,9 @@
       const buildUrl = "Build";
       const config = {
         arguments: [],
-        dataUrl: buildUrl + "/944e74aa2cf5cf7669a7d2f570d6cb88.data.unityweb",
-        frameworkUrl: buildUrl + "/1eb27ea0fe09ac754cf5ae0f557434f4.framework.js.unityweb",
-        codeUrl: buildUrl + "/0533b4dd69263808f377a39d562bbe38.wasm.unityweb",
+        dataUrl: buildUrl + "/489350167984f11e82b2eeea12e21d15.data.unityweb",
+        frameworkUrl: buildUrl + "/38a1c5f89413cd4ab9812ed24ec19bea.framework.js.unityweb",
+        codeUrl: buildUrl + "/485726d4fe113d989077b0a65bd2521e.wasm.unityweb",
         streamingAssetsUrl: "StreamingAssets",
         fullscreenElementID: "museum-app",
         companyName: "Virtual Museum",
@@ -173,7 +173,7 @@
         entryActions.hidden = true;
         loading.hidden = false;
         const loader = document.createElement("script");
-        loader.src = buildUrl + "/61294adf85e6c845d1089265664f5eec.loader.js";
+        loader.src = buildUrl + "/5219df20eb78da5a3abed0e3146f5d56.loader.js";
         loader.onerror = () => showError("The player loader could not be downloaded.");
         loader.onload = () => {
           createUnityInstance(canvas, config, (progress) => {
