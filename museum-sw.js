@@ -1,6 +1,6 @@
 // Scope-specific caches also keep the origin's root service worker out of this app.
 const prefix = "museum-" + new URL(self.registration.scope).pathname + "-";
-const shellCache = prefix + "shell-b6d80c6a4b522293";
+const shellCache = prefix + "shell-b7b901ae59768751";
 const modelCache = prefix + "models-v1";
 const roomCache = prefix + "room-v1";
 const shellPaths = ["index.html", "museum.css", "favicon.svg", "manifest.webmanifest"];
