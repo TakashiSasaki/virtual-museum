@@ -1,6 +1,6 @@
 # バーチャル展示室
 
-[Web版を開く](https://TakashiSasaki.github.io/virtual-museum/) — 「展示室に入る」から、同じページ内で見学できます。キーボード・マウス操作に加え、スマートフォン向けのタッチ操作と縦長画面のUIを用意しています。スマートフォン実機での動作・性能は未検証です。[Web版のビルド・更新・公開手順](docs/web-publication.md)。
+[Web版を開く](https://virtual-museum.moukaeritai.work/) — 「展示室に入る」から、同じページ内で見学できます。キーボード・マウス操作に加え、スマートフォン向けのタッチ操作と縦長画面のUIを用意しています。スマートフォン実機での動作・性能は未検証です。[Web版のビルド・更新・公開手順](docs/web-publication.md)。
 
 Web版では、アイモナイト君・什器・室内の質感を入室後に順次読み込みます。昆虫の胸脚を軽量模型でも確認できるようにした版の起動用データは約8.1 MBです。[段階読み込みとバックヤード](docs/progressive-loading.md)・[室内データの分割](docs/room-streaming.md)
 

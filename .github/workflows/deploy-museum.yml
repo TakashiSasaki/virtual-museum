@@ -1,0 +1,47 @@
+name: Deploy virtual museum
+
+on:
+  workflow_dispatch:
+    inputs:
+      publication_sha:
+        description: Full commit SHA currently on gh-pages
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Check out the publication branch
+        uses: actions/checkout@v6
+        with:
+          ref: gh-pages
+          persist-credentials: false
+      - name: Verify the requested publication
+        env:
+          PUBLICATION_SHA: ${{ inputs.publication_sha }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$PUBLICATION_SHA"
+          test -f index.html
+          test -f publication.json
+          test -f Content/catalog.json
+          test -f Content/room.json
+      - name: Upload the Web player
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: .
+      - name: Publish to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

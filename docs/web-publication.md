@@ -1,6 +1,6 @@
 # Web版のビルドとGitHub Pagesへの公開
 
-UnityのWebGLビルドを、このリポジトリの `gh-pages` ブランチからGitHub Pagesで配信します。制作用の `main` と配信用の生成物は別のブランチに保持します。公開先は <https://TakashiSasaki.github.io/virtual-museum/> です。更新後はGitHub側のPagesデプロイ完了と、URLへの反映を確認してください。
+UnityのWebGLビルドを `gh-pages` に置き、GitHub ActionsでGitHub Pagesに配信します。制作用の `main` と配信用の生成物は別のブランチに保持します。更新後はGitHub側のデプロイ完了と、公開URLへの反映を確認してください。[バーチャル展示室](https://virtual-museum.moukaeritai.work/)
 
 ## Unityでビルドする
 
@@ -37,9 +37,9 @@ WebテンプレートはキャンバスのCSS寸法とタッチ機能の有無�
 
 ## 同じドメインのサービスワーカー
 
-展示室は `museum-sw.js` をページと同じディレクトリから登録します。公開先でのスコープは `/virtual-museum/` です。入口の小さなファイルと、選択後に取得した詳細模型をキャッシュします。Unity初期データを二重保存したり全模型を先読みしたりしません。[段階読み込みの構成・容量・検証](progressive-loading.md)を参照してください。
+展示室は `museum-sw.js` をページと同じディレクトリから登録します。独自ドメインのスコープは `/` です。入口の小さなファイルと、選択後に取得した詳細模型をキャッシュします。[段階読み込みの構成・容量・検証](progressive-loading.md)
 
-初回アクセスで展示室のHTMLに届くよう、ドメイン直下のサイトでは Workbox の `navigateFallbackDenylist` に `/virtual-museum/` を含めます。ルート側のワーカーが有効なブラウザーから展示室を開き、開発者ツールで展示室のコントローラーが `/virtual-museum/museum-sw.js` になったことを確認します。
+同じドメインの `/virtual-museum/` に配信する場合は、ルート側の Workbox の `navigateFallbackDenylist` にそのパスを含めます。ルート側のワーカーが有効なブラウザーで展示室を開き、展示室のコントローラーが `/virtual-museum/museum-sw.js` になったことを確認します。
 
 ## 配信用ブランチに送る
 
@@ -55,15 +55,11 @@ powershell -NoProfile -ExecutionPolicy Bypass -File work/publish_webgl.ps1
 
 `publication.json` には制作側のコミットIDを保存します。再実行して配信内容が変わらない場合は、新しいコミットを作りません。通信エラーでプッシュに失敗した後など、配信作業場所に未送信コミットが残っている場合は、内容とリモートとの差分を確認してから復旧してください。スクリプトは履歴を破棄してやり直すことはしません。
 
-## GitHub Pagesの初回設定
+## GitHub Pagesへ反映する
 
-GitHubのリポジトリで **Settings → Pages → Build and deployment** を開きます。
+**Settings → Pages → Build and deployment** の公開元は **GitHub Actions** です。配信用ブランチへプッシュした後、**Actions → Deploy virtual museum → Run workflow** で `main` を選び、スクリプトが表示した `Published branch commit` の完全なSHAを入力します。ワークフローは `gh-pages` の先頭が指定されたSHAと一致することを確認して配信します。[GitHubの公開元設定](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site)
 
-- Source：**Deploy from a branch**
-- Branch：**gh-pages**
-- Folder：**/ (root)**
-
-保存後、Pagesのデプロイ結果が成功になってから公開URLを開きます。ファイル送信の成功と、Pagesの反映・ブラウザーの動作確認は別の段階です。[GitHubの公開元設定](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site)。
+デプロイ成功後に公開URLを開き、`publication.json` の制作コミットとWebプレイヤーの起動を確認します。
 
 UnityのビルドはこのPCで行います。GitHub上では生成済みの静的ファイルを配信するため、Unityのライセンス情報をGitHub Actionsのシークレットに登録する必要はありません。更新時はローカルで再ビルドし、確認してから同じ公開スクリプトを実行します。
 
