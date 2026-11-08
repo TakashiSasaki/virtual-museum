@@ -31,7 +31,7 @@
           <div id="entry-actions">
             <button id="start-button" class="primary-button" type="button">展示室に入る <span aria-hidden="true">↗</span></button>
             <p class="device-note"><span class="pointer-copy">キーボード・マウスで自由に見学</span><span class="touch-copy">タッチで移動・観察できます。縦向きのままでどうぞ。</span></p>
-            <p class="device-note">初回 約7.0 MB。模型の詳細は、選んだ分だけ読み込みます。</p>
+            <p class="device-note">初回 約8.2 MB。模型の詳細は、選んだ分だけ読み込みます。</p>
           </div>
           <div id="loading" hidden aria-live="polite" aria-atomic="true">
             <div class="loading-label"><span id="loading-message">展示室を準備しています</span><span id="progress-text">0%</span></div>
@@ -155,9 +155,9 @@
       const buildUrl = "Build";
       const config = {
         arguments: [],
-        dataUrl: buildUrl + "/b21134ad925d8c3c43fe83fe29f4d4f6.data.unityweb",
+        dataUrl: buildUrl + "/fcf03436bab87788a56bdb22add197d4.data.unityweb",
         frameworkUrl: buildUrl + "/c08b397ec40001b27fea6b6d7c74f435.framework.js.unityweb",
-        codeUrl: buildUrl + "/420f87791cd8edbdaeadd34812a6a814.wasm.unityweb",
+        codeUrl: buildUrl + "/c2bd931ed93cce5da9dd62aba4f80a07.wasm.unityweb",
         streamingAssetsUrl: "StreamingAssets",
         fullscreenElementID: "museum-app",
         companyName: "Virtual Museum",
@@ -175,7 +175,7 @@
         entryActions.hidden = true;
         loading.hidden = false;
         const loader = document.createElement("script");
-        loader.src = buildUrl + "/c51177a40de47219c2cc6151790e75ba.loader.js";
+        loader.src = buildUrl + "/ac562ff0beaeb09992dd0354f7b693ea.loader.js";
         loader.onerror = () => showError("The player loader could not be downloaded.");
         loader.onload = () => {
           createUnityInstance(canvas, config, (progress) => {
