@@ -13,10 +13,12 @@ https://ask.ifas.ufl.edu/publication/in369
 import bpy
 import math
 import json
+import runpy
 from pathlib import Path
 from mathutils import Vector, Matrix
 
 ROOT=Path(__file__).resolve().parents[1]
+Thorax=runpy.run_path(str(ROOT/'work/insect_anatomy.py'))['Thorax']
 SOURCE=ROOT/'blender/scenes/collections/blattodea.blend'
 PREVIEW=ROOT/'blender/previews/collections/blattodea.png'
 EXPORT=ROOT/'unity/VirtualMuseum/Assets/Museum/Models/Collections'
@@ -106,13 +108,17 @@ def end():
     assets[asset]=(root,list(parts))
 
 begin('Cockroach')
-ellipsoid('flattened abdomen',(0,.055,.065),(.122,.222,.053),roach)
+chest=Thorax(mesh,ellipsoid,[(-.213,-.091,.105,.023,.127),
+    (-.091,.003,.104,.012,.104),(.003,.083,.113,.011,.103)],roach)
+ellipsoid('flattened abdomen',(0,.168,.066),(.118,.112,.052),roach)
 # Lateral abdominal tergite margins remain visible beside the closed wings.
 for i in range(7):
-    y=-.015+i*.039
-    radius=.115*math.sqrt(max(.05,1-((y-.055)/.225)**2))
+    y=.091+i*.027
+    radius=.112*math.sqrt(max(.05,1-((y-.168)/.112)**2))
+    tube('ventral abdominal suture',[(radius*math.sin(a),y,.064-.051*math.sqrt(max(.05,1-((y-.168)/.112)**2))*math.cos(a))
+        for a in (-1.1,-.73,-.36,0,.36,.73,1.1)],.002,roach_edge,6)
     for sign in (-1,1):
-        ellipsoid('abdominal plate edge',(sign*radius,y,.061),(.017,.025,.013),roach_edge,16,8)
+        ellipsoid('abdominal plate edge',(sign*radius,y,.061),(.012,.016,.010),roach_edge,14,8)
 ellipsoid('concealed head',(0,-.206,.065),(.069,.068,.044),roach)
 ellipsoid('shield pronotum',(0,-.137,.113),(.121,.096,.036),roach_edge)
 ellipsoid('pronotum central dark patch',(0,-.136,.130),(.097,.075,.023),roach)
@@ -124,11 +130,11 @@ for sign in (-1,1):
     tube('long filiform antenna',points,[.0045*(1-i/50) for i in range(45)],roach_vein,6)
     for i in range(1,24):
         t=i/26;p=antenna_path(sign,t)
-        ellipsoid('antennal annulation',p,(.0032*(1-t*.65),)*3,roach_edge,8,4)
+        ellipsoid('antennal annulation',p,(.0032*(1-t*.65),)*3,roach_edge,6,4)
 
 def wing_surface(sign,t,u):
     width=.117*(math.sin(math.pi*t)**.43)
-    y=-.106+.387*t
+    y=-.087+.368*t
     x=sign*(.002+width*u)
     z=.077+.045*(math.sin(math.pi*t)**.65)*(1-u*u)
     return Vector((x,y,z))
@@ -154,12 +160,13 @@ for sign in (-1,1):
         t=.31+i*.08
         path=[wing_surface(sign,t+.022*u,u)+Vector((0,0,.0016)) for u in (.18,.35,.52,.69,.84)]
         tube('cross wing vein',path,.00065,roach_edge,5)
-    for i,(y,dx,dy) in enumerate([(-.135,.22,-.13),(-.025,.285,.025),(.105,.29,.16)]):
-        origin=(sign*.088,y,.066)
+    for i,(dx,dy) in enumerate([(.22,-.13),(.285,.025),(.29,.16)]):
+        origin=chest.coxa(i,sign,.016,roach)
+        y=origin.y
         knee=(sign*(dx*.64),y+dy*.38,.045)
         ankle=(sign*dx,y+dy,.019)
         foot=(sign*(dx+.045),y+dy+.04,.013)
-        tube('coxa and femur',[origin,knee],[.019,.014],roach,10)
+        tube('femur',[origin,knee],[.019,.014],roach,10)
         tube('long tibia',[knee,ankle],[.010,.006],roach_edge,8)
         tube('segmented tarsus',[ankle,foot,(foot[0]+sign*.018,foot[1]+.026,.014)],[.0055,.0035,.0015],roach,8)
         for j in range(8):
@@ -174,10 +181,12 @@ for sign in (-1,1):
 end()
 
 begin('Termite')
+chest=Thorax(mesh,ellipsoid,[(-.113,-.061,.063,.035,.121),
+    (-.061,-.006,.065,.031,.122),(-.006,.055,.071,.032,.117)],pale)
 # One soft body surface, with gentle segment furrows and no ant-like petiole.
 vertices=[];faces=[];rings=65;sides=24
 for i in range(rings+1):
-    t=i/rings;y=.015+.345*t
+    t=i/rings;y=.051+.309*t
     width=.102*(math.sin(math.pi*(.10+.90*t))**.48)
     width=max(.003,width)
     segment=1-.045*(.5+.5*math.cos(t*math.tau*8))
@@ -193,8 +202,6 @@ body.data.materials.append(pale_joint)
 for p in body.data.polygons:
     t=(p.index//sides)/rings
     if math.cos(t*math.tau*8)>.985:p.material_index=1
-for y,width in [(-.073,.064),(-.019,.066),(.028,.071)]:
-    ellipsoid('broad thoracic segment',(0,y,.076),(width,.041,.045),pale)
 ellipsoid('small saddle pronotum',(0,-.099,.105),(.071,.037,.025),pale_joint)
 ellipsoid('large soldier head',(0,-.222,.090),(.105,.143,.068),head,32,16)
 ellipsoid('clypeus',(0,-.340,.079),(.047,.039,.025),head,20,10)
@@ -211,12 +218,13 @@ for sign in (-1,1):
         if i:
             line('antennal membrane',previous,p,r*.50,pale_joint,n=6)
         previous=p
-    for i,y in enumerate([-.080,-.021,.037]):
-        origin=(sign*.048,y,.073)
+    for i in range(3):
+        origin=chest.coxa(i,sign,.010,legs)
+        y=origin.y
         knee=(sign*(.10+i*.006),y-.027+i*.018,.044)
         ankle=(sign*(.168+i*.012),y-.051+i*.053,.014)
         foot=(sign*(.205+i*.014),ankle[1]+.013,.009)
-        tube('six delicate articulated legs',[origin,knee,ankle,foot],[.010,.008,.0045,.002],legs,9)
+        tube('articulated thoracic leg',[origin,knee,ankle,foot],[.010,.008,.0045,.002],legs,9)
         ellipsoid('leg joint',knee,(.009,.010,.008),pale_joint,12,6)
         line('paired tarsal claw',foot,(foot[0]+sign*.016,foot[1]+.012,.007),.0018,black,tip=.0003,n=5)
         line('paired tarsal claw',foot,(foot[0]+sign*.014,foot[1]-.006,.006),.0018,black,tip=.0003,n=5)

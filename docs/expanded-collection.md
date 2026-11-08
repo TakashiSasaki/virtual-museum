@@ -10,7 +10,7 @@
 
 | 番号 | 展示名 | FBX名 | 主な観察箇所 |
 |---:|---|---|---|
-| 01 | コガネムシの仲間 | `NaturalBeetle` | 上翅、中央の合わせ目、節のある6本の脚 |
+| 01 | コガネムシの仲間 | `NaturalBeetle` | 上翅の合わせ目、腹側から見た胸の3節と脚の付け根 |
 | 02 | アゲハチョウの仲間 | `SwallowtailButterfly` | 前後2対の翅、翅脈、後翅の尾状突起 |
 | 03 | アンモナイトの化石 | `FossilAmmonite` | 外側ほど太い巻き、肋、母岩との関係 |
 | 04 | クワガタムシの仲間 | `StagBeetle` | 大あご、上翅、触角と脚の節 |
@@ -44,7 +44,9 @@
 
 FBXは観察時の扱いやすさを優先して最大寸法をおおむね1mにそろえ、Unityの展示台ごとに縮尺を調整します。昆虫・微生物・鉱物・鳥などを相互に同じ実寸比で並べた展示ではありません。とくに微生物は大きな拡大模型で、ゾウリムシとミドリムシは内部を見せる切開表現、珪藻は殻の細部を強調した表現を使います。
 
-タイコウチは幅広い体の型、ヤゴは葉状の尾鰓を持たないトンボ亜目の型をイメージしています。イモムシでは3対の胸脚と、腹部の一部にある腹脚を区別します。これらは仲間による違いのすべてを表すものではありません。
+昆虫13点と飼育箱内の甲虫では、前胸・中胸・後胸から脚が1対ずつ出るように造形しています。甲虫を腹側から見ると、上翅に覆われた中胸・後胸と、その後ろに続く腹部を区別できます。[昆虫の共通資料](exhibit-references.md#昆虫の共通資料)
+
+タイコウチは幅広い体の型、ヤゴは葉状の尾鰓を持たないトンボ亜目の型をイメージしています。イモムシの模型では胸脚と、先に小さなかぎのある腹脚を作り分けています。トビケラの幼虫は胸の3対の脚と、巣の内側にかける腹端のかぎ爪を備えます。[UC Riversideの外部形態資料](https://entomology.ucr.edu/we-ch-4)、[University of Minnesotaのトビケラ幼虫の形態資料](https://midge.cfans.umn.edu/vsmivp/trichoptera)。
 
 顕微鏡画面の倍率は操作用の表示です。実際の機種の倍率・解像度、各模型の実寸、微細構造の計測値を保証する表示ではありません。
 
@@ -73,17 +75,7 @@ Unity側の `MuseumCollectionSetup.Apply()` は、23点の一覧、説明、顕�
 
 ## 形態の参照資料
 
-以下は制作時に形態を調べるために参照した資料です。画像・写真をダウンロードして模型に貼り付けたり、提供元の文章を展示へ転載したりする用途では使っていません。個別の追加参照先は各生成スクリプト冒頭にも記録しています。
-
-- 昆虫の基本形：[Smithsonian](https://naturalhistory.si.edu/education/teaching-resources/life-science/what-insect)。甲虫・チョウ・カマキリ：[Australian Museumの甲虫](https://australian.museum/learn/species-identification/ask-an-expert/what-do-beetles-look-like/)、[チョウ類](https://australian.museum/learn/species-identification/ask-an-expert/what-do-butterflies-moths-and-skippers-look-like/)、[カマキリ](https://australian.museum/learn/animals/insects/praying-mantises-order-mantodea/)。
-- ミツバチ：[University of Arkansasの解説](https://www.uaex.uada.edu/farm-ranch/special-programs/beekeeping/about-honey-bees.aspx)。クモ：[Australian Museum](https://australian.museum/learn/species-identification/ask-an-expert/what-is-a-spiders/)。
-- ゲンゴロウ：[University of Minnesotaの標本写真資料](https://midge.cfans.umn.edu/vsmivp/coleoptera/coleopteraadult/dytiscidaeadult)。タイコウチ：[University of Maine](https://extension.umaine.edu/home-and-garden-ipm/fact-sheets/common-name-listing/water-scorpions/)。
-- ヤゴ・トビケラ：[Missouri Department of Conservationのトンボ](https://mdc.mo.gov/discover-nature/field-guide/dragonflies)、[トビケラ幼虫](https://mdc.mo.gov/discover-nature/field-guide/caddisfly-larvae)。イモムシの脚：[University of California IPM](https://ipm.ucanr.edu/PMG/G/I-LP-GENL-KC.001.html)。
-- ゾウリムシ：[国立環境研究所の形態資料](https://www.nies.go.jp/chiiki1/protoz/morpho/ciliopho/parameci.htm)。ミドリムシ：[University of Maryland](https://www.science.umd.edu/labs/delwiche/PSlife/lectures/Euglenophyta.html)。
-- 珪藻：[Diatoms of North Americaの縦溝の説明](https://diatoms.org/glossary/Raphe)、[California Academy of Sciencesの形態用語集](https://researcharchive.calacademy.org/research/diatoms/overview/glossary.html)。
-- 鉱物：[Oxford University Museum of Natural Historyの学習資料](https://learningzone.oumnh.ox.ac.uk/node/2168186)、[Amgueddfa Cymruの鉱物データベース](https://museum.wales/mineralogy-of-wales/database/?mineral=266)。アンモナイト：[Natural History Museum](https://www.nhm.ac.uk/discover/what-is-an-ammonite.html)。
-- カワセミ：[RSPB](https://www.rspb.org.uk/birds-and-wildlife/kingfisher)。リス：[Woodland Trust](https://www.woodlandtrust.org.uk/trees-woods-and-wildlife/animals/mammals/red-squirrel/)。
-- ゴキブリ目：[Natural History Museumの分類・収蔵資料](https://www.nhm.ac.uk/our-science/services/collections/entomology/small-orders.html)、[Australian Museumのゴキブリの形態](https://australian.museum/learn/animals/insects/cockroaches-order-blattodea/)。
+各模型で参照した資料と、造形に使った箇所を一覧にまとめています。[展示室の模型の参考資料](exhibit-references.md#展示室の模型)
 
 ## 検証範囲
 

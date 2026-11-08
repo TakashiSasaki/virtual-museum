@@ -38,6 +38,7 @@ for p in [BLEND.parent,PREVIEW.parent,EXPORT]: p.mkdir(parents=True,exist_ok=Tru
 bpy.ops.wm.read_factory_settings(use_empty=True)
 bpy.context.preferences.filepaths.save_version=0
 export_groups=runpy.run_path(str(ROOT/'work/export_static_fbx.py'))['export_selected_groups']
+Thorax=runpy.run_path(str(ROOT/'work/insect_anatomy.py'))['Thorax']
 scene=bpy.context.scene
 scene.unit_settings.system='METRIC'
 random.seed(6294)
@@ -140,17 +141,21 @@ def mayfly():
     eye=material('CompoundEyes',(.10,.047,.031),.19)
     membrane=material('WingMembrane',(.75,.83,.76),.29,.24)
     vein=material('WingVeins',(.25,.22,.10),.44)
-    ball('raised thorax',(0,.10,.025),(.070,.095,.065),body,24,12)
+    chest=Thorax(mesh,ball,[(.172,.132,.047,-.021,.066),
+        (.132,.056,.070,-.043,.093),(.056,.009,.051,-.031,.069)],body)
     ball('head capsule',(0,.208,.035),(.064,.057,.048),light)
-    for i in range(9):
-        y=.01-i*.047;r=.048-i*.0036
+    for i in range(10):
+        y=-.011-i*.043;r=.047-i*.0032
         ball('abdominal segment '+str(i+1),(0,y,.012-i*.001),(r,.032,r*.72),body)
         tube('dorsal segment boundary',[(r*math.cos(a),y-.021,.012-i*.001+r*.73*math.sin(a)) for a in [j*math.pi/14 for j in range(15)]],.0025,band,5)
     for s in (-1,1):
         ball('large compound eye',(s*.044,.217,.062),(.032,.032,.030),eye)
         curve('short bristle antenna',mirrored([(.023,.247,.055),(.038,.294,.07),(.054,.332,.068)],s),.0028,band,.0004)
-        plans=[[(.04,.13,.00),(.14,.22,-.025),(.18,.40,-.07),(.13,.53,-.085)],[(.045,.075,-.012),(.17,.00,-.01),(.22,.01,-.12),(.29,.035,-.13)],[(.039,.034,-.018),(.16,-.15,-.04),(.21,-.22,-.12),(.29,-.29,-.13)]]
-        for j,pts in enumerate(plans):leg('leg '+str(s)+' '+str(j+1),mirrored(pts,s),light,band,.007)
+        plans=[[(.14,.22,-.025),(.18,.40,-.07),(.13,.53,-.085)],
+               [(.17,.00,-.01),(.22,.01,-.12),(.29,.035,-.13)],
+               [(.16,-.15,-.04),(.21,-.22,-.12),(.29,-.29,-.13)]]
+        for j,pts in enumerate(plans):
+            leg('thoracic leg '+str(j+1),[chest.coxa(j,s,.009,light)]+mirrored(pts,s),light,band,.007)
         curve('threadlike caudal cercus',mirrored([(.014,-.40,.008),(.085,-.65,.01),(.16,-.95,.04),(.22,-1.21,.07)],s),.006,light,.00065,steps=10)
         for j in range(17):
             t=j/17;p=Vector((s*(.014+.206*t),-.40-.81*t,.008+.062*t))
@@ -165,21 +170,26 @@ def lacewing():
     eye=material('GoldenEyes',(.55,.30,.045),.22,1,.24)
     membrane=material('WingMembrane',(.72,.88,.57),.31,.24)
     vein=material('NetVeins',(.25,.40,.10),.4)
-    ball('thorax',(0,.11,.025),(.057,.095,.057),body,20,12)
+    chest=Thorax(mesh,ball,[(.182,.135,.046,-.018,.074),
+        (.135,.083,.061,-.030,.093),(.083,.025,.055,-.024,.078)],body)
     ball('head',(0,.225,.025),(.067,.051,.046),body)
-    for i in range(9):
+    for i in range(10):
         r=.043-i*.0025
-        ball('abdomen segment '+str(i+1),(0,.015-i*.045,.005),(r,.032,r*.72),body)
-        tube('pale abdominal dorsal stripe',[(0,.04-i*.045,.005+r*.74),(0,-.006-i*.045,.005+r*.74)],.006,pale,6)
+        y=.006-i*.041
+        ball('abdomen segment '+str(i+1),(0,y,.005),(r,.027,r*.72),body)
+        tube('pale abdominal dorsal stripe',[(0,y+.017,.005+r*.58),(0,y,.005+r*.73),
+            (0,y-.017,.005+r*.58)],.004,pale,6)
     for s in (-1,1):
         ball('golden compound eye',(s*.058,.231,.036),(.025,.029,.026),eye)
         curve('long thread antenna',mirrored([(.027,.260,.039),(.062,.38,.045),(.055,.58,.05),(.098,.74,.08)],s),.0033,dark,.0005,steps=9)
-        for j,y in enumerate([.16,.10,.055]):
+        for j in range(3):
             target=[.30,-.05,-.26][j]
-            leg('slender walking leg '+str(s)+str(j),mirrored([(.044,y,0),(.11,y+.01,-.025),(.18,target,-.09),(.21,target-.05,-.12)],s),pale,dark,.006)
+            root=chest.coxa(j,s,.008,body)
+            leg('slender walking leg '+str(j+1),[root,(s*.11,root.y+.01,-.025),
+                (s*.18,target,-.09),(s*.21,target-.05,-.12)],pale,dark,.006)
         # Hindwing sits under the larger forewing, both in a tent-like pose.
         wing('roof hindwing '+str(s),(s*.036,.07,.054),(s*.15,-.52,-.04),(s*.095,-.01,-.055),membrane,vein,True)
-        wing('roof forewing '+str(s),(s*.032,.14,.087),(s*.20,-.60,-.052),(s*.115,.0,-.045),membrane,vein,True)
+        wing('roof forewing '+str(s),(s*.028,.116,.080),(s*.20,-.576,-.045),(s*.115,.0,-.045),membrane,vein,True)
 
 def strider():
     shell=material('DarkCuticle',(.038,.031,.023),.36)
@@ -187,7 +197,8 @@ def strider():
     stripe=material('SilverFlanks',(.60,.62,.52),.36,1,.12)
     brown=material('WarmLegs',(.16,.105,.052),.45)
     eye=material('Eyes',(.008,.012,.013),.18)
-    ball('elongated mesothorax',(0,.105,.025),(.070,.14,.041),shell)
+    chest=Thorax(mesh,ball,[(.284,.193,.053,-.007,.065),
+        (.193,.058,.067,-.018,.066),(.058,-.012,.063,-.019,.059)],shell)
     ball('pronotum',(0,.245,.03),(.054,.069,.04),shell)
     ball('head',(0,.315,.028),(.049,.050,.034),brown)
     for i in range(8):
@@ -197,9 +208,12 @@ def strider():
     for s in (-1,1):
         ball('compound eye',(s*.040,.325,.042),(.017,.023,.019),eye,14,8)
         curve('four-segment antenna',mirrored([(.027,.35,.028),(.076,.43,.025),(.115,.53,.028),(.14,.64,.035)],s),.0042,brown,.0012,steps=5)
-        leg('short grasping foreleg '+str(s),mirrored([(.039,.24,-.005),(.12,.27,-.045),(.13,.39,-.085),(.065,.43,-.086)],s),brown,joints,.010)
-        leg('long rowing middle leg '+str(s),mirrored([(.055,.13,.00),(.25,.17,.025),(.48,.24,-.12),(.66,.20,-.14)],s),brown,joints,.010,True)
-        leg('long steering hind leg '+str(s),mirrored([(.049,.014,-.005),(.22,-.21,.008),(.43,-.44,-.12),(.56,-.58,-.14)],s),brown,joints,.009,True)
+        leg('short grasping foreleg',[chest.coxa(0,s,.010,brown),(s*.12,.27,-.045),
+            (s*.13,.39,-.085),(s*.065,.43,-.086)],brown,joints,.010)
+        leg('long rowing middle leg',[chest.coxa(1,s,.013,brown,fraction=.72),(s*.25,.17,.025),
+            (s*.48,.24,-.12),(s*.66,.20,-.14)],brown,joints,.010,True)
+        leg('long steering hind leg',[chest.coxa(2,s,.012,brown,fraction=.37),(s*.22,-.21,.008),
+            (s*.43,-.44,-.12),(s*.56,-.58,-.14)],brown,joints,.009,True)
     tube('folded piercing rostrum',[(0,.341,-.004),(0,.28,-.034),(0,.20,-.039)],[.008,.006,.002],joints,7)
     for i in range(65):
         y=random.uniform(-.25,.22);x=random.uniform(-.035,.035)
@@ -212,10 +226,11 @@ def mosquito():
     eye=material('Eyes',(.022,.030,.025),.17)
     membrane=material('WingMembrane',(.66,.69,.60),.34,.24)
     vein=material('WingScales',(.20,.16,.10),.49)
-    ball('humped thorax',(0,.115,.05),(.061,.084,.081),body,24,12)
+    chest=Thorax(mesh,ball,[(.190,.153,.042,-.010,.082),
+        (.153,.078,.061,-.035,.133),(.078,.038,.043,-.023,.083)],body)
     ball('head',(0,.225,.066),(.047,.047,.041),body)
     for i in range(8):
-        r=.038-i*.0023;y=.025-i*.055
+        r=.038-i*.0023;y=.020-i*.055
         ball('slender abdomen segment '+str(i+1),(0,y,.013-i*.004),(r,.039,r*.75),body)
         tube('cream dorsal scale band',[(r*.93*math.cos(a),y+.016,.013-i*.004+r*.76*math.sin(a)) for a in [j*math.pi/10 for j in range(11)]],.0031,pale,5)
     curve('long proboscis',[(0,.26,.06),(0,.40,.048),(0,.53,.044)],.008,body,.003,steps=8)
@@ -226,18 +241,20 @@ def mosquito():
             t=j/9;p=Vector((s*(.029+.05*t),.27+.16*t,.10+.05*t))
             for q in (-1,1):tube('antennal seta',[p,p+Vector((s*q*.013,.012,.006))],[.0007,.0001],pale,4)
         curve('short maxillary palp',mirrored([(.013,.265,.052),(.021,.31,.052),(.027,.33,.05)],s),.0038,pale,.001)
-        for j,y in enumerate([.16,.10,.05]):
+        for j in range(3):
+            root=chest.coxa(j,s,.008,body,angle=-.96)
             tips=[.32,-.13,-.48];ty=tips[j]
-            points=mirrored([(.043,y,.01),(.19,y+(.11 if j==0 else -.06),.01),(.29,ty,-.13),(.39,ty-.09,-.19)],s)
-            leg('long leg '+str(s)+str(j),points,body,dark,.006)
+            points=[root,(s*.19,root.y+(.11 if j==0 else -.06),.01),(s*.29,ty,-.13),
+                    (s*.39,ty-.09,-.19)]
+            leg('long leg '+str(j+1),points,body,dark,.006)
             a,b=Vector(points[1]),Vector(points[2]);tube('pale leg band',[a.lerp(b,.82),a.lerp(b,.90)],[.0049,.0045],pale,7)
         # True flies have a single flight-wing pair; these small knobs are halteres.
-        tube('haltere stalk',[(s*.047,.052,.028),(s*.087,.012,.053)],[.0034,.0024],pale,7)
+        tube('haltere stalk',[chest.surface(2,.57,.30,s),(s*.087,.012,.053)],[.0034,.0024],pale,7)
         ball('haltere knob',(s*.087,.012,.053),(.010,.012,.011),pale,12,6)
         wing('single flight wing '+str(s),(s*.038,.13,.102),(s*.30,-.34,.012),(s*.048,.065,.004),membrane,vein)
     for i in range(55):
-        a=random.random()*math.tau;y=random.uniform(.07,.17)
-        p=Vector((.057*math.cos(a),y,.052+.073*math.sin(a)))
+        a=random.random()*math.tau;fraction=random.uniform(0,1)
+        p=chest.surface(1,fraction,a)
         tube('thoracic scale seta',[p,p+Vector((math.cos(a)*.007,-.008,math.sin(a)*.007))],[.0007,.0001],pale,4)
 
 def larva():
@@ -271,12 +288,15 @@ def larva():
     siphon=[end+Vector((0,-.025,.025)),end+Vector((.025,-.10,.10)),end+Vector((.048,-.20,.18))]
     tube('posterior respiratory siphon',siphon,[.023,.017,.010],dark,12)
     ball('siphon spiracular opening',siphon[-1],(.011,.007,.011),eye,12,6)
+    # The brush and four papillae arise behind the siphon on the anal segment.
+    saddle=end+Vector((0,-.048,-.015))
+    ball('anal saddle',saddle,(.032,.032,.026),band,16,8)
     for s in (-1,1):
         for j in range(2):
-            root=end+Vector((s*.022,-.030,-.005-j*.023))
+            root=saddle+Vector((s*.014,-.024,.012-j*.024))
             curve('paired anal papilla', [root,root+Vector((s*.018,-.05,-.02)),root+Vector((s*.036,-.082,-.027))],.013,pale,.003,steps=5,sides=8)
     for j in range(16):
-        p=end+Vector((0,-.028,-.028));tube('ventral anal brush',[p,p+Vector((-.055+j*.007,-.085,-.06))],[.0018,.0002],pale,4)
+        p=saddle+Vector((0,-.013,-.020));tube('ventral anal brush',[p,p+Vector((-.055+j*.007,-.085,-.06))],[.0018,.0002],pale,4)
 
 def finish(name):
     bpy.context.view_layer.update();points=[o.matrix_world@Vector(v) for o in parts for v in o.bound_box]

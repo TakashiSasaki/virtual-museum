@@ -33,6 +33,7 @@ bpy.context.preferences.filepaths.save_version=0
 scene=bpy.context.scene
 scene.unit_settings.system='METRIC'
 export_groups=runpy.run_path(str(ROOT/'work/export_static_fbx.py'))['export_selected_groups']
+Thorax=runpy.run_path(str(ROOT/'work/insect_anatomy.py'))['Thorax']
 random.seed(5117)
 parts=[];current=None;reports=[]
 
@@ -93,11 +94,14 @@ def leg(name,pts,mat,dark,r=.012):
     for s in (-1,1):
         tube(name+' tarsal claw',[p,p+direction*.017+Vector((s*.004,0,0)),p+direction*.023+Vector((s*.003,0,.006))],[r*.20,r*.14,.0005],dark,5)
 
-def beetle_legs(mat,dark,roots=(.12,.04,-.06),reach=.26,r=.014):
+def beetle_legs(chest,mat,dark,reach=.26,r=.014):
     for s in (-1,1):
-        for i,y in enumerate(roots):
+        for i in range(3):
+            root=chest.coxa(i,s,r*1.4,mat,fraction=.62 if i==2 else .5)
+            y=root.y
             dy=(.14,0,-.16)[i]
-            leg('walking leg '+str(s)+' '+str(i+1),mirror([(.08,y,-.015),(reach*.72,y+dy*.6,-.005),(reach,y+dy,-.075),(reach+.035,y+dy*1.25,-.082)],s),mat,dark,r)
+            leg('walking leg '+str(s)+' '+str(i+1),[root,(s*reach*.74,y+dy*.6,-.029),
+                (s*reach,y+dy,-.075),(s*(reach+.035),y+dy*1.25,-.082)],mat,dark,r)
 
 def dome(width,length,cy,height,mat):
     for side in (-1,1):
@@ -147,7 +151,9 @@ def ladybird():
     cream=material('Cream_pronotum_marks',(.85,.79,.57),.43)
     eyes=material('Eyes',(.012,.018,.019),.19)
     legmat=material('Legs',(.075,.04,.022),.42)
-    ball('ventral abdomen',(0,-.055,-.013),(.205,.265,.061),black,24,12)
+    chest=Thorax(mesh,ball,[(.272,.204,.147,-.037,.057),
+        (.204,.118,.170,-.054,.066),(.118,-.022,.187,-.065,.064)],black)
+    ball('ventral abdomen',(0,-.155,-.013),(.184,.161,.061),black,24,12)
     dome(.22,.27,-.045,.175,red)
     for s in (-1,1):
         for x,y,r in [(.09,.085,.043),(.135,-.055,.048),(.078,-.19,.039)]:spot('conforming dark spot',s*x,y,r,.22,.27,-.045,.175,spots)
@@ -159,8 +165,11 @@ def ladybird():
         curve('short club antenna',mirror([(.038,.322,.017),(.069,.351,.018),(.097,.362,.019)],s),.004,legmat)
         ball('antennal club',(s*.10,.364,.018),(.008,.014,.007),black,12,6)
     ball('head',(0,.286,.018),(.081,.065,.052),black)
-    beetle_legs(legmat,black,roots=(.20,.095,-.025),reach=.25,r=.011)
-    for y in [-.08,-.14,-.20]:tube('ventral abdominal seam',[(-.13,y,-.055),(0,y-.01,-.073),(.13,y,-.055)],.002,legmat)
+    beetle_legs(chest,legmat,black,reach=.25,r=.011)
+    for y in (-.065,-.111,-.157,-.203,-.25):
+        section=math.sqrt(1-((y+.155)/.161)**2)
+        tube('ventral abdominal seam',[(.184*section*math.sin(a),y,-.014-.061*section*math.cos(a))
+            for a in (-1.1,-.73,-.36,0,.36,.73,1.1)],.002,legmat,6)
 
 def firefly():
     dark=material('Soft_black_elytra',(.025,.033,.028),.48)
@@ -169,7 +178,9 @@ def firefly():
     brown=material('Legs_and_antennae',(.11,.065,.028),.42)
     eyes=material('Eyes',(.007,.011,.009),.19)
     lantern=material('Ventral_lantern',(.77,.85,.32),.48)
-    for i in range(7):ball('abdomen segment '+str(i),(0,.02-i*.045,-.012),(.093-i*.002,.033,.040),brown,18,8)
+    chest=Thorax(mesh,ball,[(.258,.177,.093,-.028,.056),
+        (.177,.099,.085,-.037,.055),(.099,.021,.094,-.045,.049)],brown)
+    for i in range(7):ball('abdomen segment '+str(i+1),(0,.009-i*.045,-.012),(.093-i*.002,.032,.040),brown,18,8)
     dome(.104,.245,-.06,.047,dark)
     for s in (-1,1):
         curve('pale elytral edge',mirror([(.017,.178,.024),(.077,.12,.046),(.104,-.02,.025),(.079,-.24,.025),(.013,-.301,.017)],s),.004,cream)
@@ -186,7 +197,7 @@ def firefly():
         for i in range(9):
             y=.35+i*.012;x=.068+i*.0045;ball('antenna segment',(s*x,y,.021),(.005,.008,.004),dark,8,6)
         for y in (-.21,-.25):ball('ventral pale lantern plate',(s*.039,y,-.047),(.042,.021,.006),lantern,16,8)
-    beetle_legs(brown,dark,roots=(.18,.095,.01),reach=.19,r=.009)
+    beetle_legs(chest,brown,dark,reach=.19,r=.009)
 
 def weevil():
     body=material('Ochre_cuticle',(.22,.155,.072),.55)
@@ -195,7 +206,9 @@ def weevil():
     gold=material('Pale_scales',(.60,.49,.25),.59)
     eyes=material('Eyes',(.008,.012,.009),.20)
     legmat=material('Leg_cuticle',(.135,.10,.04),.49)
-    ball('ventral abdomen',(0,-.14,-.014),(.14,.20,.063),body,22,12)
+    chest=Thorax(mesh,ball,[(.191,.112,.100,-.038,.073),
+        (.112,.034,.118,-.047,.058),(.034,-.062,.139,-.057,.053)],body)
+    ball('ventral abdomen',(0,-.18,-.014),(.132,.146,.063),body,22,12)
     dome(.16,.22,-.10,.10,elytra)
     ball('pronotum',(0,.124,.025),(.108,.095,.08),body,22,12)
     ball('head',(0,.225,.029),(.077,.071,.062),body)
@@ -216,7 +229,7 @@ def weevil():
             y=-.27+random.random()*.32;x=s*(.025+random.random()*.09)
             z=surface(x,y,.16,.22,-.1,.10,.002)[2]
             ball('scattered pale scale',(x,y,z),(.005,.009,.0018),gold,8,6)
-    beetle_legs(legmat,dark,roots=(.13,.055,-.03),reach=.205,r=.012)
+    beetle_legs(chest,legmat,dark,reach=.205,r=.012)
 
 def ant():
     head=material('Head_cuticle',(.14,.043,.014),.38)
@@ -226,9 +239,10 @@ def ant():
     eyes=material('Eyes',(.006,.009,.008),.18)
     setae=material('Fine_setae',(.43,.25,.10),.60)
     ball('head capsule',(0,.245,.042),(.112,.115,.083),head,26,14)
-    ball('pronotum',(0,.065,.025),(.077,.074,.060),thorax,20,12)
-    ball('mesonotum',(0,-.005,.026),(.061,.053,.053),thorax)
-    ball('propodeum',(0,-.06,.018),(.058,.053,.049),thorax)
+    ball('neck',(0,.129,.028),(.038,.024,.036),thorax,14,8)
+    chest=Thorax(mesh,ball,[(.128,.054,.076,-.031,.087),
+        (.054,-.001,.061,-.027,.075),(-.001,-.057,.054,-.025,.065)],thorax)
+    ball('propodeum (first abdominal segment)',(0,-.071,.020),(.056,.032,.048),thorax)
     ball('petiole stalk',(0,-.125,-.004),(.020,.042,.018),head,14,8)
     ball('single petiole node',(0,-.142,.024),(.031,.022,.054),head,16,10)
     ball('gaster',(0,-.285,.027),(.125,.15,.097),gaster,28,16)
@@ -242,9 +256,12 @@ def ant():
         curve('antenna scape',mirror([(.038,.318,.072),(.095,.371,.092),(.165,.422,.091)],s),.006,head,end=.004)
         curve('antenna funiculus',mirror([(.165,.422,.091),(.203,.374,.090),(.242,.329,.078)],s),.004,head,end=.0025)
         for j in range(8):ball('antennal segment',(s*(.172+j*.01),.414-j*.011,.091-j*.0017),(.0045,.007,.004),joint,8,6)
-        plans=[(.08,.28,.32),(.012,.30,-.025),(-.065,.27,-.32)]
-        for i,(y,reach,tip) in enumerate(plans):
-            pts=mirror([(.048,y,.015),(.12,y+(tip-y)*.25,.065),(reach*.78,y+(tip-y)*.55,.012),(reach,tip,-.10),(reach+.025,tip+(.04 if i==0 else -.025),-.108)],s)
+        plans=[(.28,.32),(.30,-.025),(.27,-.32)]
+        for i,(reach,tip) in enumerate(plans):
+            root=chest.coxa(i,s,.012,thorax)
+            y=root.y
+            pts=[root,(s*.12,y+(tip-y)*.25,.065),(s*reach*.78,y+(tip-y)*.55,.012),
+                 (s*reach,tip,-.10),(s*(reach+.025),tip+(.04 if i==0 else -.025),-.108)]
             leg('long worker leg '+str(s)+' '+str(i),pts,thorax,joint,.009)
     for i in range(58):
         a=random.random()*math.tau;u=random.uniform(-.8,.8);v=math.sqrt(1-u*u)
@@ -259,16 +276,17 @@ def antlion():
     bristles=material('Bristles',(.14,.10,.055),.68)
     spots=material('Dark_mottling',(.23,.17,.09),.70)
     eyes=material('Lateral_eye_tubercles',(.018,.018,.012),.36)
-    ball('pear shaped abdomen',(0,-.14,.018),(.198,.235,.115),body,26,14)
+    ball('pear shaped abdomen',(0,-.17,.018),(.198,.203,.115),body,26,14)
     for j in range(7):
-        y=.006-j*.05;w=.112+math.sin((j+1)*math.pi/8)*.085
-        ball('abdominal segment '+str(j),(0,y,.033), (w,.039,.098-j*.003),plates,22,10)
+        y=-.009-j*.048;w=.112+math.sin((j+1)*math.pi/8)*.085
+        ball('abdominal segment '+str(j+1),(0,y,.033), (w,.033,.098-j*.003),plates,22,10)
         for s in (-1,1):
             ball('lateral tubercle',(s*w,y,.016),(.032,.027,.030),body,12,8)
             for k in range(6):
                 p=Vector((s*(w+.009),y+(k-2.5)*.007,.033));q=p+Vector((s*(.04+random.random()*.025),random.uniform(-.014,.014),.012))
                 tube('lateral stiff bristle',[p,q],[.0022,.00025],bristles,4)
-    ball('thorax',(0,.104,.015),(.116,.104,.072),head,22,12)
+    chest=Thorax(mesh,ball,[(.171,.118,.097,-.047,.083),
+        (.118,.061,.107,-.053,.087),(.061,.013,.115,-.055,.082)],head)
     ball('broad head',(0,.229,.028),(.137,.107,.065),head,26,14)
     for s in (-1,1):
         curve('sickle shaped hollow mandible',mirror([(.090,.29,.034),(.136,.38,.048),(.113,.47,.063),(.044,.535,.069)],s),.023,jaws,end=.0018,sides=10)
@@ -278,9 +296,12 @@ def antlion():
         ball('eye tubercle',(s*.129,.253,.046),(.017,.022,.019),head,12,8)
         for i in range(3):ball('small lateral eye',(s*(.139+i*.001),.245+i*.008,.056),(.0045,.0045,.0045),eyes,8,6)
         curve('short antenna',mirror([(.087,.303,.062),(.107,.325,.065),(.123,.340,.064)],s),.0026,head,end=.001)
-        for i,y in enumerate([.15,.088,.028]):
+        for i in range(3):
+            root=chest.coxa(i,s,.012,head)
+            y=root.y
             reach=.18+i*.025;tip=y+(.08 if i==0 else -.025-i*.025)
-            leg('short thoracic leg '+str(s)+' '+str(i),mirror([(.075,y,-.01),(.13,y,-.026),(reach,tip,-.073),(reach+.021,tip+.008,-.08)],s),head,jaws,.010)
+            leg('short thoracic leg '+str(s)+' '+str(i),[root,(s*.13,y,-.039),
+                (s*reach,tip,-.073),(s*(reach+.021),tip+.008,-.08)],head,jaws,.010)
     for j in range(44):
         x=random.uniform(-.12,.12);y=random.uniform(-.28,.015)
         z=.033+.10*math.sqrt(max(.1,1-(x/.20)**2))

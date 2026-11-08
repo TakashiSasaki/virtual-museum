@@ -17,10 +17,12 @@ import bpy
 import math
 import random
 import json
+import runpy
 from pathlib import Path
 from mathutils import Vector, Matrix
 
 ROOT = Path(__file__).resolve().parents[1]
+Thorax = runpy.run_path(str(ROOT / 'work/insect_anatomy.py'))['Thorax']
 SOURCE = ROOT / 'blender/scenes/collections/minerals_habitat.blend'
 PREVIEW = ROOT / 'blender/previews/collections/minerals_habitat.png'
 EXPORT = ROOT / 'unity/VirtualMuseum/Assets/Museum/Models/Collections'
@@ -369,14 +371,22 @@ for sign in (-1,1):
 
 def beetle(center,length,heading):
     start=len(parts);c=Vector(center)
-    ellipsoid('beetle joined elytra',(0,.01,0),(.037*length,.062*length,.026*length),beetle_mat,20,10)
+    ellipsoid('beetle folded elytra',(0,.01*length,.003*length),(.037*length,.062*length,.026*length),beetle_mat,20,10)
     ellipsoid('beetle pronotum',(0,-.045*length,.002),(.032*length,.028*length,.024*length),beetle_head,20,10)
     ellipsoid('beetle head',(0,-.077*length,.003),(.022*length,.022*length,.019*length),beetle_head,16,8)
+    sections=[tuple(value*length for value in section) for section in
+        [(-.063,-.032,.026,-.012,.016),(-.032,-.005,.028,-.016,.020),
+         (-.005,.023,.031,-.017,.021)]]
+    chest=Thorax(mesh,ellipsoid,sections,beetle_head)
+    ellipsoid('beetle abdomen',(0,.044*length,-.007*length),(.030*length,.028*length,.014*length),beetle_head,16,8)
     rod('elytral seam',(0,-.035*length,.025*length),(0,.068*length,.008*length),.0015*length,beetle_head,n=5)
     for sign in (-1,1):
         for i in range(3):
-            y=(-.039+i*.036)*length
-            tube('six jointed legs',[(sign*.025*length,y,0),(sign*.054*length,y+.015*length,-.012*length),(sign*.074*length,y+.032*length,-.027*length)],[.004*length,.003*length,.0012*length],beetle_head,6)
+            root=chest.coxa(i,sign,.0045*length,beetle_head)
+            sweep=(-.024,.004,.030)[i]*length
+            knee=Vector((sign*.054*length,root.y+sweep*.45,-.010*length))
+            tip=Vector((sign*.073*length,root.y+sweep,-.027*length))
+            tube('beetle jointed leg',[root,knee,tip],[.004*length,.003*length,.0012*length],beetle_head,6)
         tube('antenna',[(sign*.013*length,-.084*length,.008*length),(sign*.036*length,-.105*length,.008*length),(sign*.042*length,-.12*length,.015*length)],.0018*length,beetle_head,6)
     rotation=Matrix.Rotation(heading,4,'Z')
     for obj in parts[start:]: obj.matrix_world=Matrix.Translation(c)@rotation@obj.matrix_world

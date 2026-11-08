@@ -30,6 +30,7 @@ bpy.ops.wm.read_factory_settings(use_empty=True)
 bpy.context.preferences.filepaths.save_version=0
 scene=bpy.context.scene;scene.unit_settings.system='METRIC'
 export_groups=runpy.run_path(str(ROOT/'work/export_static_fbx.py'))['export_selected_groups']
+Thorax=runpy.run_path(str(ROOT/'work/insect_anatomy.py'))['Thorax']
 current=None;parts=[];reports=[]
 random.seed(971)
 
@@ -115,11 +116,13 @@ def cicada():
     amber=mat('OchreEdge',(.40,.24,.055),.45);eye=mat('CompoundEye',(.105,.025,.014),.24)
     vein=mat('WingVein',(.12,.13,.062),.46);membrane=mat('WingMembrane',(.64,.70,.57),.29,alpha=.35)
     abdomen=mat('Abdomen',(.16,.12,.055),.51)
-    ball('abdomen',(0,-.15,.004),(.128,.255,.085),abdomen,24,14)
+    ball('abdomen',(0,-.207,.004),(.128,.192,.085),abdomen,24,14)
     for i in range(7):
-        y=-.02-i*.05;w=.125*math.sqrt(max(.05,1-((y+.15)/.255)**2))
-        curve('abdominal tergite edge',[(-w,y,.005),(-w*.74,y,.068),(0,y,.088),(w*.74,y,.068),(w,y,.005)],.003,amber,steps=3)
-    ball('mesonotum',(0,.10,.045),(.145,.16,.103),shell,24,14)
+        y=-.055-i*.050;section=math.sqrt(1-((y+.207)/.192)**2)
+        curve('abdominal tergite edge',[(.128*section*math.cos(a),y,.004+.085*section*math.sin(a))
+            for a in (0,.52,1.04,1.57,2.10,2.62,3.14)],.0026,amber,steps=2)
+    chest=Thorax(mesh,ball,[(.290,.200,.141,-.030,.098),
+        (.200,.095,.145,-.054,.143),(.095,-.036,.138,-.057,.117)],shell)
     ball('pronotum collar',(0,.255,.045),(.174,.055,.070),shell,24,12)
     ball('broad head',(0,.34,.040),(.184,.083,.069),shell,24,12)
     for s in (-1,1):
@@ -138,8 +141,11 @@ def cicada():
         for row in range(4):
             y=-.04-row*.09
             curve('cross vein row',[wp(.15,y+.018),wp(.23,y),wp(.32+(row==1)*.03,y-.028)],.00125,vein,steps=3)
-        for i,y in enumerate((.235,.11,-.015)):
-            pts=mirror([(.10,y,.0),(.20,y+(.06 if i==0 else -.03),-.02),(.25,y+(.15-i*.14),-.12),(.28,y+(.19-i*.16),-.13)],s)
+        for i in range(3):
+            root=chest.coxa(i,s,.018,shell)
+            y=root.y
+            pts=[root,(s*.20,y+(.06 if i==0 else -.03),-.038),
+                 (s*.25,y+(.15-i*.14),-.12),(s*.28,y+(.19-i*.16),-.13)]
             leg('leg '+str(i+1),pts,shell,dark,.018 if i==0 else .012)
             if i==0:
                 for k in range(3):tube('fore femur spine',[(s*(.145+k*.014),y+.03,-.022),(s*(.142+k*.014),y+.025,-.055)],[.005,.0005],dark,5)
@@ -150,12 +156,14 @@ def grasshopper():
     green=mat('LeafGreen',(.17,.32,.065),.55);light=mat('PaleCuticle',(.34,.43,.12),.57)
     dark=mat('DarkJoints',(.055,.075,.023),.48);wingmat=mat('FoldedTegmina',(.22,.26,.07),.48)
     stripe=mat('WingStriae',(.39,.38,.15),.6);eye=mat('CompoundEye',(.22,.15,.055),.25)
-    ball('long tapered abdomen',(0,-.14,.035),(.075,.29,.071),green,24,12)
+    ball('long tapered abdomen',(0,-.233,.035),(.075,.20,.067),green,24,12)
     for i in range(8):
-        y=.015-i*.052;w=.073*math.sqrt(max(.05,1-((y+.14)/.29)**2))
-        curve('abdomen segment', [(-w,y,.02),(0,y,.107),(w,y,.02)],.0027,light,steps=4)
+        y=-.059-i*.047;section=math.sqrt(1-((y+.233)/.20)**2);w=.075*section
+        curve('abdomen segment',[(w*math.cos(a),y,.035+.067*section*math.sin(a))
+             for a in (0,.52,1.04,1.57,2.10,2.62,3.14)],.0027,light,steps=2)
         for s in(-1,1):ball('spiracle',(s*w,y,.025),(.004,.008,.004),dark,10,6)
-    ball('thorax',(0,.16,.055),(.091,.13,.085),green,24,12)
+    chest=Thorax(mesh,ball,[(.286,.173,.085,-.015,.139),
+        (.173,.079,.079,-.025,.132),(.079,-.052,.091,-.032,.128)],green)
     # Pronotum saddle has flared side lobes and a raised midline keel.
     for s in(-1,1):
         wing('pronotum side lobe',[(.01,.29),(.082,.28),(.106,.13),(.07,.08),(.012,.11)],green,s,.112,.065)
@@ -171,10 +179,12 @@ def grasshopper():
             x=.015+k*.014
             curve('forewing longitudinal vein',mirror([(x,.10,.14+.045*x),(x+.007,-.09,.14+.045*x),(x*.65,-.36,.14+.045*x)],s),.0019,stripe)
         for k in range(5):tube('forewing cross vein',mirror([(.012,-.02-k*.065,.142),(.074-k*.006,-.04-k*.06,.144)],s),.001,stripe,5)
-        leg('foreleg',mirror([(.06,.23,.02),(.12,.27,.005),(.20,.37,-.105),(.23,.42,-.115)],s),light,dark,.012)
-        leg('middle leg',mirror([(.07,.10,.015),(.19,.08,-.01),(.24,-.075,-.105),(.27,-.12,-.115)],s),green,dark,.013)
+        leg('foreleg',[chest.coxa(0,s,.015,green),(s*.12,.27,.005),
+                       (s*.20,.37,-.105),(s*.23,.42,-.115)],light,dark,.012)
+        leg('middle leg',[chest.coxa(1,s,.016,green),(s*.19,.08,-.018),
+                         (s*.24,-.075,-.105),(s*.27,-.12,-.115)],green,dark,.013)
         # Enlarged folded femur and slender long tibia are distinct joints.
-        a=Vector((s*.065,.0,.025));b=Vector((s*.23,-.28,.11));c=Vector((s*.27,.075,-.115));d=Vector((s*.34,.14,-.13))
+        a=chest.coxa(2,s,.026,green);b=Vector((s*.23,-.28,.11));c=Vector((s*.27,.075,-.115));d=Vector((s*.34,.14,-.13))
         tube('jumping femur',[a,a.lerp(b,.35),a.lerp(b,.7),b],[.029,.052,.042,.018],green,16)
         ball('hind knee',b,(.024,)*3,dark,14,8)
         tube('long hind tibia',[b,b.lerp(c,.65),c],[.014,.011,.007],light,9)
@@ -194,9 +204,8 @@ def stick():
     # Wingless stick-insect form. Long mesothorax and metathorax carry the
     # middle and hind legs; the segmented abdomen begins behind them.
     ball('small head',(0,.43,.018),(.032,.055,.029),bark,20,10)
-    tube('short prothorax',[(0,.38,.008),(0,.32,.008)],[.022,.023],bark,12)
-    tube('elongate mesothorax',[(0,.32,.008),(0,.16,.006),(0,.015,0)],[.023,.021,.026],bark,14)
-    tube('metathorax',[(0,.015,0),(0,-.08,-.004),(0,-.20,-.006)],[.026,.028,.026],olive,14)
+    chest=Thorax(mesh,ball,[(.383,.318,.023,-.015,.030),
+        (.318,.011,.024,-.018,.030),(.011,-.205,.027,-.031,.023)],bark)
     for i in range(9):
         y=-.21-i*.059;r=.026-i*.0017
         tube('abdominal segment '+str(i+1),[(0,y,-.006),(0,y-.025,-.006),(0,y-.056,-.008)],[r*.85,r,r*.80],bark,12)
@@ -209,9 +218,11 @@ def stick():
                [(.023,.015,.0),(.27,.10,.045),(.43,-.025,-.09),(.48,-.08,-.10)],
                [(.023,-.19,-.005),(.22,-.32,.024),(.35,-.63,-.09),(.38,-.79,-.10)]]
         for i,p in enumerate(plans):
-            leg('walking leg '+str(i+1),mirror(p,s),bark,dark,.0115)
+            points=mirror(p,s)
+            points[0]=chest.coxa(i,s,.010,bark,fraction=(.60,.88,.88)[i])
+            leg('walking leg '+str(i+1),points,bark,dark,.0115)
             for k in range(2):
-                a=Vector(mirror(p,s)[k]);b=Vector(mirror(p,s)[k+1]);q=a.lerp(b,.48)
+                a=Vector(points[k]);b=Vector(points[k+1]);q=a.lerp(b,.48)
                 tube('leg twig thorn',[q,q+Vector((s*.014,.009,.009))],[.003,.0002],olive,5)
         tube('small terminal cercus',[(s*.008,-.738,-.005),(s*.017,-.77,-.003)],[.004,.001],dark,6)
     for i in range(18):
@@ -224,7 +235,9 @@ def earwig():
     brown=mat('MahoganyCuticle',(.19,.060,.023),.36);dark=mat('DarkSutures',(.035,.016,.009),.47)
     ochre=mat('TawnyLegs',(.46,.29,.13),.48);wingmat=mat('ShortTegmina',(.29,.12,.046),.36)
     edge=mat('TergaEdges',(.33,.13,.047),.43);eye=mat('CompoundEyes',(.009,.009,.008),.23)
-    ball('flattened abdomen',(0,-.14,.0),(.107,.24,.038),brown,24,12)
+    chest=Thorax(mesh,ball,[(.264,.163,.083,-.017,.065),
+        (.163,.096,.080,-.026,.068),(.096,.028,.084,-.027,.053)],brown)
+    ball('flattened abdomen',(0,-.18,.0),(.104,.219,.038),brown,24,12)
     for i in range(8):
         y=.015-i*.05;w=.108*math.sqrt(max(.18,1-((y+.14)/.255)**2))
         ball('overlapping tergite',(0,y,.021),(w,.031,.025),brown,20,8)
@@ -238,8 +251,11 @@ def earwig():
         # Earwig forewings end early, exposing most abdominal tergites.
         wing('short leathery forewing',[(.004,.16),(.086,.15),(.086,.025),(.065,-.01),(.004,.005)],wingmat,s,.066,.004)
         curve('tegmen outer rim',mirror([(.078,.15,.073),(.084,.04,.073),(.063,-.004,.073)],s),.0025,edge)
-        for j,y in enumerate((.215,.12,.035)):
-            leg('walking leg '+str(j+1),mirror([(.065,y,.004),(.145,y+(.025 if j==0 else -.025),-.005),(.20,y+(.13-j*.14),-.055),(.235,y+(.16-j*.15),-.058)],s),ochre,dark,.010)
+        for j in range(3):
+            root=chest.coxa(j,s,.012,ochre)
+            y=root.y
+            leg('walking leg '+str(j+1),[root,(s*.145,y+(.025 if j==0 else -.025),-.015),
+                (s*.20,y+(.13-j*.14),-.055),(s*.235,y+(.16-j*.15),-.058)],ochre,dark,.010)
         # Large curved cerci, a male-like forceps form; not a stinger.
         curve('curved abdominal forceps',mirror([(.058,-.34,.008),(.098,-.405,.015),(.105,-.48,.018),(.064,-.535,.027),(.013,-.55,.029)],s),.021,brown,end=.0015,steps=7,sides=12)
         tube('forceps inner tooth',mirror([(.094,-.43,.018),(.058,-.442,.022)],s),[.010,.0007],dark,7)

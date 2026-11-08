@@ -38,6 +38,8 @@ Unity用のFBXは `Assets/Museum/Models/Reserve/`、抽出した材質は `Asset
 
 ## 元データと再生成
 
+昆虫・化石の模型ごとの参照資料と、土器・石器の設計上の扱いを記録しています。[バックヤードの模型の参考資料](exhibit-references.md#バックヤードの模型)
+
 | Blender元データ | 確認画像 | 生成スクリプト |
 |---|---|---|
 | [reserve_large_insects.blend](../blender/scenes/collections/reserve_large_insects.blend) | [大型の昆虫4点](../blender/previews/collections/reserve_large_insects.png) | [build_reserve_large_insects.py](../work/build_reserve_large_insects.py) |
@@ -72,6 +74,8 @@ Unity用のFBXは `Assets/Museum/Models/Reserve/`、抽出した材質は `Asset
 昆虫・化石は公開された博物館・大学などの形態資料を参考に独自制作した教材模型で、出典は各生成スクリプトの冒頭に記載しています。土器・石器は特定資料を複製せず、器壁・口縁・剥離面などを表現した汎用の制作模型です。実物標本や遺物のスキャンではなく、種・年代・産地・文化・用途を鑑定する資料としては使用できません。土器・石器は特定の遺跡や文化の遺物を複製したものではありません。
 
 観察時の扱いやすさのため、FBXの最大寸法はおおむね1m、中心は原点にそろえています。相互の大きさは実寸比ではありません。細い毛や翅脈などを強調した表現も含みます。顕微鏡の登録情報は既存の生成模式図へ接続するためのもので、実物の顕微鏡写真や計測値を用意したという意味ではありません。
+
+昆虫の胸脚は、前胸・中胸・後胸に1対ずつ付きます。カの成虫は中胸に翅、後胸に平均棍を持ちます。脚のないカの幼虫では、胸と分節した腹、腹端近くの呼吸管を表現しています。[NC State Universityの胸部の解説](https://genent.cals.ncsu.edu/bug-bytes/thorax/)、[University of Floridaのイエカ幼虫の形態資料](https://ask.ifas.ufl.edu/publication/IN837)。
 
 昆虫14点では、Blenderの保存済みファイルを再読込してレンダーを確認し、FBXの再インポートで原点・寸法・材質・形状を照合しています。化石・遺物も保存済みBlenderファイルのレンダーを確認しました。Unityでは全25点の読み込み、材質・シェーダー参照、最大寸法、三角形数と一覧レンダーを確認しています。その後追加したバックヤード訪問では、Editorで25点すべての観察・復帰を確認し、Webでも昆虫・化石・土器の代表例を操作しました。[段階読み込みの検証範囲](progressive-loading.md#検証)を参照してください。スマートフォン実機での表示性能は未検証です。
 

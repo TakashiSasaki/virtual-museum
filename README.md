@@ -2,7 +2,7 @@
 
 [Web版を開く](https://TakashiSasaki.github.io/virtual-museum/) — 「展示室に入る」から、同じページ内で見学できます。キーボード・マウス操作に加え、スマートフォン向けのタッチ操作と縦長画面のUIを用意しています。スマートフォン実機での動作・性能は未検証です。[Web版のビルド・更新・公開手順](docs/web-publication.md)。
 
-制作中のWeb版では、アイモナイト君・什器・室内の質感を入室後に順次読み込み、起動用データを約6.95 MBへ分割しました。[段階読み込みとバックヤード](docs/progressive-loading.md)・[室内データの分割](docs/room-streaming.md)。ローカル検証済みで、公開サイトへの反映は別工程です。
+Web版では、アイモナイト君・什器・室内の質感を入室後に順次読み込みます。昆虫の胸脚を軽量模型でも確認できるようにした版の起動用データは約8.1 MBです。[段階読み込みとバックヤード](docs/progressive-loading.md)・[室内データの分割](docs/room-streaming.md)
 
 ## バージョン1：操作できる1部屋のプロトタイプ
 
@@ -22,6 +22,7 @@
 - 開くシーン：`Assets/Museum/Scenes/MuseumV1.unity`
 - [起動・操作・制限事項](unity/README.md)
 - [初期バージョン1の仕様](docs/version1-spec.md)
+- [展示物の制作参考資料](docs/exhibit-references.md)
 - [拡張した23点の展示](docs/expanded-collection.md)・[陸上の昆虫とクモ](blender/previews/collections/terrestrial.png)・[水生・幼虫・微生物](blender/previews/collections/aquatic_micro.png)・[鉱物・化石・剥製型模型・飼育箱](blender/previews/collections/minerals_habitat.png)・[ゴキブリ目の比較](blender/previews/collections/blattodea.png)
 - Blender元データ：`blender/scenes/museum_v1_assets.blend`
 - [モデル確認画像](blender/previews/museum_v1_assets.png)

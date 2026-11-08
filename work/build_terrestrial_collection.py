@@ -52,6 +52,7 @@ if SPIDER_ONLY:
 else:bpy.ops.wm.read_factory_settings(use_empty=True)
 bpy.context.preferences.filepaths.save_version=0
 export_groups=runpy.run_path(str(REPO/'work/export_static_fbx.py'))['export_selected_groups']
+Thorax=runpy.run_path(str(REPO/'work/insect_anatomy.py'))['Thorax']
 work_scene=bpy.context.scene
 current=None
 parts=[]
@@ -73,6 +74,12 @@ def add_object(name,mesh,mat):
     obj=bpy.data.objects.new(current.name+' | '+name,mesh);current.objects.link(obj)
     if mat:mesh.materials.append(mat)
     parts.append(obj);return obj
+
+def mesh_part(name, vertices, faces, mat):
+    mesh=bpy.data.meshes.new(name)
+    mesh.from_pydata(vertices,[],faces)
+    mesh.update()
+    return add_object(name,mesh,mat)
 
 def sphere(name,loc,scale,mat,segments=20,rings=10):
     bpy.ops.mesh.primitive_uv_sphere_add(segments=segments,ring_count=rings,location=loc)
@@ -153,11 +160,13 @@ def leg(name,points,mat,radius=.012,clawmat=None):
         tube(name+' tarsal claw',[end,end+direction*.022+Vector((side*.008,0,0)),end+direction*.028+Vector((side*.006,0,.008))],
              [radius*.31,radius*.21,.001],clawmat or mat,5)
 
-def six_beetle_legs(mat,joint,ys=(.12,.025,-.10),wide=.25):
+def six_beetle_legs(chest,mat,joint,wide=.25):
     for side in (-1,1):
-        for i,y in enumerate(ys):
+        for i in range(3):
+            root=chest.coxa(i,side,.019,mat,fraction=.65 if i==2 else .5)
+            y=root.y
             dy=(.13,-.025,-.16)[i]
-            pts=[(side*.10,y,0),(side*(wide*.8),y+dy*.55,-.015),
+            pts=[root,(side*(wide*.8),y+dy*.55,-.035),
                  (side*wide,y+dy,-.07),(side*(wide+.055),y+dy*1.35,-.075)]
             leg(('L' if side<0 else 'R')+str(i+1),pts,mat,.014,joint)
 
@@ -187,7 +196,17 @@ def beetle(stag=False):
     eyes=material(pre+'_Eye',(.006,.009,.007),.16)
     brass=material(pre+'_CuticleEdge',(.25,.125,.055) if stag else (.16,.24,.064),.3,.25)
     width=.16 if stag else .205;length=.24 if stag else .29;cy=-.12
-    sphere('abdominal underside',(0,cy,-.016),(width*.97,length,.08),dark,24,12)
+    shoulder=cy+length-.007
+    rear_chest=-.088 if stag else -.072
+    chest=Thorax(mesh_part,sphere,[(.232,shoulder,.140,-.057,.064),
+        (shoulder,.046 if stag else .063,width*.83,-.064,.047),
+        (.046 if stag else .063,rear_chest,width*.92,-.077,.048)],thorax)
+    # The elytra roof the meso- and metathorax as well as the abdomen.
+    abdomen_front=rear_chest+.025
+    abdomen_back=cy-length
+    abdomen_y=(abdomen_front+abdomen_back)/2
+    abdomen_half=(abdomen_front-abdomen_back)/2
+    sphere('abdominal underside',(0,abdomen_y,-.016),(width*.84,abdomen_half,.079),dark,24,12)
     for side in (-1,1):
         shell_half(side,width,length,cy,.085 if stag else .125,shell)
         for j in range(1,7):
@@ -205,10 +224,13 @@ def beetle(stag=False):
         for l in range(3):
             end=(side*(.228+l*.011),.352,.028)
             sphere('antennal lamella',end,(.007,.020,.005),brass,12,6)
-    six_beetle_legs(thorax,dark,wide=.27 if stag else .29)
+    six_beetle_legs(chest,thorax,dark,wide=.27 if stag else .29)
     for i in range(5):
-        y=-.04-i*.054;w=width*math.sqrt(max(.1,1-((y-cy)/length)**2))
-        curve('ventral abdominal suture',[(-w*.8,y,-.05),(0,y,-.093),(w*.8,y,-.05)],.0025,ridge,steps=6)
+        y=rear_chest-.033-i*(rear_chest-abdomen_back-.057)/4
+        slice_scale=math.sqrt(1-((y-abdomen_y)/abdomen_half)**2)
+        points=[(width*.84*slice_scale*math.sin(a),y,-.017-.079*slice_scale*math.cos(a))
+                for a in (-1.2,-.8,-.4,0,.4,.8,1.2)]
+        curve('ventral abdominal suture',points,.0025,ridge,steps=3)
     if stag:
         for side in (-1,1):
             path=[(.074,.32,.02),(.137,.40,.028),(.146,.50,.035),(.105,.59,.04),(.047,.635,.045)]
@@ -227,8 +249,10 @@ def butterfly():
     red=material(pre+'_WingRed',(.59,.11,.052),.58)
     body=material(pre+'_Body',(.038,.031,.022),.66)
     hair=material(pre+'_Hair',(.40,.34,.19),.75)
+    chest=Thorax(mesh_part,sphere,[(.147,.105,.024,-.004,.052),
+        (.105,.043,.036,-.011,.064),(.043,-.007,.031,-.008,.056)],body)
     fore=[(.032,.08),(.09,.22),(.24,.36),(.40,.43),(.50,.385),(.51,.34),(.46,.245),(.43,.19),(.375,.11),(.31,.06),(.24,.006),(.17,-.04),(.075,-.045)]
-    hind=[(.04,.015),(.16,.025),(.28,-.01),(.34,-.09),(.345,-.17),(.31,-.22),(.281,-.22),(.267,-.365),(.245,-.385),(.228,-.23),(.195,-.265),(.167,-.251),(.14,-.276),(.108,-.25),(.08,-.247),(.035,-.13)]
+    hind=[(.022,.015),(.16,.025),(.28,-.01),(.34,-.09),(.345,-.17),(.31,-.22),(.281,-.22),(.267,-.365),(.245,-.385),(.228,-.23),(.195,-.265),(.167,-.251),(.14,-.276),(.108,-.25),(.08,-.247),(.035,-.13)]
     creamfore=[(.055,.10),(.14,.24),(.265,.34),(.395,.381),(.454,.347),(.407,.22),(.34,.125),(.25,.052),(.15,-.005),(.065,-.02)]
     creamhind=[(.055,-.016),(.15,-.002),(.25,-.039),(.286,-.10),(.28,-.168),(.237,-.195),(.18,-.212),(.12,-.213),(.068,-.16)]
     for side in (-1,1):
@@ -236,7 +260,7 @@ def butterfly():
         plate('hindwing',hind,dark,side,z=.021,rounded=True)
         plate('forewing cream field',creamfore,yellow,side,z=.030,rounded=True)
         plate('hindwing cream field',creamhind,yellow,side,z=.024,rounded=True)
-        roots=[(.05,.08,.033),(.053,-.01,.028)]
+        roots=[(.031,.08,.031),(.023,.015,.026)]
         for j,edge in enumerate([( .44,.34),(.41,.25),(.35,.15),(.27,.07),(.17,-.01)]):
             midpoint=(edge[0]*.58,edge[1]*.62+.035,.038)
             curve('forewing major vein',mirror([roots[0],midpoint,(edge[0],edge[1],.034+edge[0]*.025)],side),.003,dark,steps=4)
@@ -249,15 +273,18 @@ def butterfly():
         sphere('hindwing red eyespot',(side*.098,-.213,.037),(.017,.016,.0028),red,16,6)
         curve('clubbed antenna',mirror([(.018,.17,.045),(.045,.25,.07),(.067,.30,.08)],side),.0035,body,end=.002)
         sphere('antennal club',(side*.067,.301,.08),(.006,.014,.005),body,12,6)
+        sphere('compound eye',(side*.019,.175,.041),(.013,.019,.016),body,12,8)
         for i in range(3):
-            leg('fine thoracic leg',mirror([(.018,.10-i*.025,.012),(.06,.14-i*.07,-.025),(.095,.11-i*.08,-.045)],side),body,.004)
-    sphere('thorax',(0,.085,.025),(.035,.073,.034),body,20,10)
+            root=chest.coxa(i,side,.006,body)
+            leg('fine thoracic leg',[root,(side*.057,.14-i*.065,-.028),
+                                     (side*.095,.11-i*.07,-.045)],body,.004)
     sphere('head',(0,.166,.035),(.026,.026,.026),body,18,8)
+    curve('coiled proboscis',[(0,.171+.014*math.cos(i*.42),.014+.013*math.sin(i*.42)) for i in range(15)],.0022,body,steps=2)
     for i in range(7):sphere('abdominal segment',(0,.006-i*.029,.022),(.025*(1-i*.075),.023,.023*(1-i*.07)),body,16,8)
     for i in range(85):
-        a=random.random()*math.tau;y=random.uniform(.03,.14)
-        p=(.031*math.cos(a),y,.026+.029*math.sin(a))
-        tube('thorax short seta',[p,(p[0]*1.19,p[1]+.003,p[2]+.006)], [.0009,.0001],hair,4)
+        a=random.random()*math.tau;fraction=random.uniform(0,1)
+        p=chest.surface(1,fraction,a)
+        tube('thorax short seta',[p,p+Vector((.005*math.cos(a),.003,.006*math.sin(a)))], [.0009,.0001],hair,4)
 
 def membrane(name,outline,side,wing,vein,root,z=.04):
     plate(name,outline,wing,side,z=z,thickness=.0008,rounded=True)
@@ -286,19 +313,23 @@ def dragonfly():
     eyes=material(pre+'_Eye',(.16,.27,.17),.23,.12)
     wing=material(pre+'_WingMembrane',(.72,.82,.80),.20,alpha=.23)
     vein=material(pre+'_WingVein',(.10,.13,.105),.48)
-    sphere('thorax',(0,.11,.025),(.062,.099,.063),dark,20,10)
+    chest=Thorax(mesh_part,sphere,[(.210,.177,.039,-.024,.060),
+        (.177,.104,.063,-.035,.087),(.104,.027,.058,-.027,.075)],dark)
+    sphere('head capsule',(0,.227,.039),(.058,.040,.045),dark,18,10)
     for side in (-1,1):
         curve('thorax lateral stripe',[(side*.045,.17,.065),(side*.05,.12,.077),(side*.04,.04,.067)],.008,gold)
         sphere('large compound eye',(side*.035,.225,.065),(.043,.045,.042),eyes,20,10)
         curve('short antenna',[(side*.012,.25,.06),(side*.020,.29,.07)],.002,dark)
         fore=[(.045,.15),(.21,.20),(.46,.245),(.555,.229),(.57,.201),(.53,.173),(.34,.135),(.08,.104)]
-        hind=[(.05,.067),(.23,.057),(.46,.014),(.53,-.02),(.525,-.047),(.48,-.071),(.29,-.047),(.11,.005)]
+        hind=[(.045,.079),(.23,.057),(.46,.014),(.53,-.02),(.525,-.047),(.48,-.071),(.29,-.047),(.11,.005)]
         membrane('forewing',fore,side,wing,vein,(.045,.15),.037)
-        membrane('hindwing',hind,side,wing,vein,(.05,.067),.032)
+        membrane('hindwing',hind,side,wing,vein,(.045,.079),.032)
         plate('forewing pterostigma',[(.475,.229),(.505,.228),(.508,.215),(.478,.215)],dark,side,z=.052)
         plate('hindwing pterostigma',[(.45,.014),(.48,.003),(.486,-.009),(.454,.002)],dark,side,z=.047)
         for i in range(3):
-            leg('thoracic grasping leg',mirror([(.036,.16-i*.035,.005),(.086,.20-i*.043,-.041),(.10,.13-i*.07,-.075),(.075,.10-i*.07,-.085)],side),dark,.006)
+            root=chest.coxa(i,side,.009,dark)
+            leg('thoracic grasping leg',[root,(side*.086,.21-i*.043,-.041),
+                (side*.10,.14-i*.066,-.075),(side*.075,.10-i*.066,-.085)],dark,.006)
     sphere('face',(0,.255,.04),(.026,.027,.023),gold,16,8)
     for i in range(10):
         y=.028-i*.055;r=.031*(1-i*.068);end_r=.031*(1-(i+1)*.068)
@@ -316,24 +347,33 @@ def bee():
     wing=material(pre+'_WingMembrane',(.75,.78,.69),.23,alpha=.27)
     vein=material(pre+'_WingVein',(.24,.17,.075),.5)
     pollen=material(pre+'_Pollen',(.86,.53,.065),.72)
-    sphere('thorax',(0,.07,.035),(.104,.124,.093),dark,22,12)
+    chest=Thorax(mesh_part,sphere,[(.171,.124,.069,-.042,.097),
+        (.124,.023,.104,-.060,.126),(.023,-.052,.089,-.052,.101)],dark)
+    # In bees the first abdominal segment (propodeum) is fused behind T3.
+    sphere('propodeum',(0,-.058,.024),(.068,.031,.064),dark,18,10)
+    sphere('narrow abdominal attachment',(0,-.089,.016),(.028,.029,.028),dark,16,8)
     sphere('head',(0,.219,.02),(.079,.070,.067),dark,22,12)
     for side in (-1,1):
         sphere('compound eye',(side*.057,.231,.047),(.031,.049,.040),eye,18,10)
         curve('elbowed antenna',mirror([(.026,.265,.052),(.057,.31,.057),(.078,.326,.039),(.086,.344,.035)],side),.004,dark)
         fore=[(.067,.11),(.20,.29),(.35,.38),(.405,.365),(.421,.328),(.38,.275),(.25,.16),(.095,.062)]
-        hind=[(.08,.059),(.20,.158),(.293,.193),(.32,.175),(.30,.139),(.21,.071),(.10,.02)]
+        hind=[(.075,.010),(.20,.134),(.293,.176),(.32,.158),(.30,.119),(.21,.051),(.09,-.016)]
         membrane('forewing',fore,side,wing,vein,(.067,.11),.067)
-        membrane('hindwing',hind,side,wing,vein,(.08,.059),.052)
+        membrane('hindwing',hind,side,wing,vein,(.075,.010),.052)
         for i in range(3):
-            y=.13-i*.08;dy=(.10,-.02,-.14)[i]
-            leg('jointed leg',mirror([(.075,y,.003),(.145,y+dy*.3,-.04),(.19,y+dy,-.08),(.235,y+dy*1.25,-.08)],side),dark,.010)
-        sphere('hind tibia pollen basket',(side*.175,-.15,-.065),(.022,.039,.012),amber,16,8)
-        sphere('pollen load',(side*.185,-.15,-.055),(.019,.030,.014),pollen,16,8)
+            root=chest.coxa(i,side,.014,dark)
+            y=root.y;dy=(.10,-.02,-.14)[i]
+            knee=Vector((side*.145,y+dy*.3,-.046))
+            ankle=Vector((side*.195,y+dy,-.08))
+            leg('jointed leg',[root,knee,ankle,(side*.235,y+dy*1.25,-.08)],dark,.010)
+            if i==2:
+                tibia=sphere('broadened hind tibia',knee.lerp(ankle,.53),(.021,(ankle-knee).length*.46,.010),amber,16,8)
+                tibia.rotation_euler=(ankle-knee).to_track_quat('Y','Z').to_euler()
+                sphere('pollen load',knee.lerp(ankle,.57)+Vector((side*.009,0,.010)),(.020,.031,.013),pollen,16,8)
     # Closed, contiguous abdominal rings, with a naturally tapering tip.
     rings=35;sides=28;verts=[];faces_by_mat={amber:[],dark:[]}
     for i in range(rings+1):
-        t=i/rings;y=-.015-.365*t;r=.123*(math.sin(math.pi*(.12+.88*t))**.7)
+        t=i/rings;y=-.094-.292*t;r=.110*(math.sin(math.pi*(.07+.93*t))**.7)
         for j in range(sides):
             a=j*math.tau/sides;verts.append((r*math.cos(a),y,.017+r*.70*math.sin(a)))
     for i in range(rings):
@@ -346,7 +386,8 @@ def bee():
     for i in range(320):
         u=random.uniform(-1,1);a=random.random()*math.tau;v=math.sqrt(1-u*u)
         normal=Vector((v*math.cos(a),u,v*math.sin(a)))
-        p=Vector((normal.x*.104,.07+normal.y*.124,.035+normal.z*.093))
+        segment=0 if u>.63 else 2 if u<-.52 else 1
+        p=chest.surface(segment,(1-u)*.5,a)
         length=random.uniform(.007,.018)
         tube('thoracic branched hair',[p,p+normal*length],[.0012,.00015],fur,4)
     for i in range(3):sphere('ocellus',(0,.228+i*.012,.082),(.006,.006,.004),eye,10,6)
@@ -359,9 +400,9 @@ def mantis():
     dark=material(pre+'_JointSpine',(.075,.095,.025),.43)
     eyes=material(pre+'_Eye',(.36,.43,.17),.37)
     stripe=material(pre+'_VentralOchre',(.46,.38,.11),.53)
-    sphere('abdomen',(0,-.155,.005),(.072,.235,.041),stripe,20,12)
-    sphere('mesothorax',(0,.06,.013),(.055,.09,.041),green,20,10)
-    tube('elongated prothorax',[(0,.08,.025),(0,.20,.037),(0,.35,.043)],[.040,.028,.025],green,14)
+    sphere('abdomen',(0,-.226,.005),(.072,.174,.041),stripe,20,12)
+    chest=Thorax(mesh_part,sphere,[(.367,.112,.031,-.002,.071),
+        (.112,.028,.054,-.029,.051),(.028,-.066,.061,-.034,.050)],green)
     # Triangular head capsule with large eyes at the two lateral corners.
     plate('triangular head',[(-.082,.417),(0,.365),(.082,.417),(.069,.46),(-.069,.46)],green,z=.037,thickness=.040,curve_up=0)
     for side in (-1,1):
@@ -375,16 +416,21 @@ def mantis():
             curve('forewing oblique vein',mirror([(.012,y-.03,.057),(w,y,.057)],side),.0013,pale,steps=2)
         # Foreleg coxa extends forward; enlarged femur and folding tibia make
         # the characteristic grasping apparatus, with opposing spine rows.
-        leg('raptorial foreleg',mirror([(.024,.30,.024),(.082,.39,.019),(.154,.245,.022),(.091,.36,.028),(.078,.385,.027)],side),green,.018,dark)
+        root=chest.coxa(0,side,.015,green,fraction=.26)
+        hip,knee,tip=map(Vector,mirror([(.082,.39,.019),(.154,.245,.022),(.091,.36,.028)],side))
+        tube('elongated fore coxa',[root,root.lerp(hip,.55),hip],[.012,.018,.010],green,10)
+        leg('raptorial foreleg',[hip,knee,tip,(side*.078,.385,.027)],green,.018,dark)
         for i in range(5):
-            t=i/5;x=.086+.061*t;y=.375-.12*t
-            tube('femoral grasping spine',mirror([(x,y,.019),(x-.017,y-.017,.008)],side),[.004,.0004],dark,5)
+            p=hip.lerp(knee,.16+i*.16)
+            tube('femoral grasping spine',[p,p+Vector((-side*.020,-.011,-.005))],[.004,.0004],dark,5)
         for i in range(4):
-            t=i/4;x=.145-.044*t;y=.266+.073*t
-            tube('tibial grasping spine',mirror([(x,y,.026),(x+.011,y+.004,.012)],side),[.003,.0003],dark,5)
-        for i in range(2):
-            y=.055-i*.095
-            leg('walking leg',mirror([(.042,y,.005),(.16,y-.035,-.012),(.245,y-.19,-.073),(.33,y-.23,-.075)],side),green,.009,dark)
+            p=knee.lerp(tip,.14+i*.18)
+            tube('tibial grasping spine',[p,p+Vector((side*.016,.003,-.005))],[.003,.0003],dark,5)
+        for i in (1,2):
+            root=chest.coxa(i,side,.012,green)
+            y=root.y
+            leg('walking leg',[root,(side*.16,y-.035,-.012),(side*.245,y-.19,-.073),
+                               (side*.33,y-.23,-.075)],green,.009,dark)
     sphere('mouth shield',(0,.387,.060),(.018,.016,.007),stripe,12,8)
 
 def spider():

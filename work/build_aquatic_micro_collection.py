@@ -17,11 +17,12 @@ https://www.science.umd.edu/labs/delwiche/PSlife/lectures/Euglenophyta.html
 https://diatoms.org/glossary/Raphe
 https://researcharchive.calacademy.org/research/diatoms/overview/glossary.html
 """
-import bpy, math, random, sys, json, os
+import bpy, math, random, runpy, sys, json, os
 from pathlib import Path
 from mathutils import Vector
 
 ROOT = Path(__file__).resolve().parents[1]
+Thorax = runpy.run_path(str(ROOT / 'work/insect_anatomy.py'))['Thorax']
 EXPORT = ROOT / 'unity/VirtualMuseum/Assets/Museum/Models/Collections'
 SAVE = ROOT / 'blender/scenes/collections/aquatic_micro.blend'
 PREVIEW = ROOT / 'blender/previews/collections/aquatic_micro.png'
@@ -93,13 +94,15 @@ def ring(name, center, rx, ry, mat, r=.006, plane='XY', n=32):
         pts.append(Vector(center)+Vector(offset))
     return tube(name,pts,r,mat,6)
 
-def leg(name, pts, mat, rad=.018, clawmat=None):
+def leg(name, pts, mat, rad=.018, clawmat=None, single_claw=False):
     tube(name,pts,[rad,rad*1.15,rad*.64,rad*.25],mat)
     for i in [1,2]: ball(name+'_joint',pts[i],(rad*1.2,)*3,mat,12,6)
     if clawmat:
         p=Vector(pts[-1]); d=(p-Vector(pts[-2])).normalized()
-        for side in [-1,1]:
-            tube(name+'_claw',[p,p+d*.025+Vector((side*.009,0,-.008)),p+d*.035+Vector((side*.006,0,-.014))],[rad*.3,rad*.18,.001],clawmat,6)
+        for side in ([0] if single_claw else [-1,1]):
+            tube(name+'_claw',[p,p+d*rad*1.15+Vector((side*rad*.45,0,-rad*.40)),
+                p+d*rad*1.65+Vector((side*rad*.30,0,-rad*.78))],
+                [rad*.30,rad*.19,rad*.05],clawmat,6)
 
 def leaflet(name, a, b, width, depth, mat):
     a,b=Vector(a),Vector(b)
@@ -168,7 +171,13 @@ gold=material('Ochre_margin',(.56,.40,.095),.35)
 under=material('Ventral_chitin',(.14,.105,.048),.48)
 dark=material('Eyes_and_claws',(.008,.013,.012),.16)
 hair=material('Swimming_setae',(.58,.49,.23),.56)
-ball('abdomen',(0,-.055,0),(.235,.36,.095),under)
+chest=Thorax(mesh,ball,[(.326,.206,.173,-.048,.088),
+    (.206,.102,.182,-.067,.068),(.102,-.053,.211,-.076,.072)],under)
+ball('ventral abdomen',(0,-.225,-.007),(.196,.187,.087),under,24,12)
+for y in (-.10,-.155,-.21,-.265,-.32,-.37):
+    section=math.sqrt(1-((y+.225)/.187)**2)
+    tube('ventral abdominal seam',[(.196*section*math.sin(a),y,-.008-.087*section*math.cos(a))
+         for a in (-1.15,-.77,-.38,0,.38,.77,1.15)],.0023,dark,6)
 for side in [-1,1]:
     # A continuous half-dome gives the paired elytra one streamlined outline,
     # with a narrow median suture rather than two disconnected oval lobes.
@@ -198,15 +207,25 @@ ball('head',(0,.35,.018),(.118,.095,.07),shell)
 for s in [-1,1]:
     ball('compound_eye',(s*.098,.373,.043),(.033,.041,.033),dark)
     tube('antenna',[(s*.075,.412,.028),(s*.135,.46,.038),(s*.19,.49,.026),(s*.23,.505,.01)],[.009,.007,.004,.0015],gold)
-    for i,y in enumerate([.23,.10,-.04]):
+    for i in range(3):
+        root=chest.coxa(i,s,.021 if i==2 else .016,under,
+                        fraction=.73 if i==2 else .53,angle=-.92)
+        y=root.y
         if i<2:
-            leg('walking_leg',[(s*.15,y,-.015),(s*.27,y+.025,-.018),(s*.31,y-.12,-.047),(s*.36,y-.17,-.055)],under,.016,dark)
+            leg('walking_leg',[root,(s*.265,y+.021,-.04),(s*.31,y-.10,-.073),
+                               (s*.36,y-.15,-.075)],under,.016,dark)
         else:
-            leg('swimming_leg',[(s*.16,y,-.02),(s*.31,-.15,-.015),(s*.37,-.34,-.045),(s*.31,-.45,-.055)],under,.022,dark)
-            leaflet('flattened_hind_tibia',(s*.31,-.15,-.016),(s*.37,-.35,-.044),.035,.014,gold)
-            for j in range(12):
-                y=-.16-j*.019; x=s*(.31+(.35+y)*.12)
-                tube('paddle_fringe',[(x,y,-.038),(x+s*.067,y-.023,-.041),(x+s*.083,y-.043,-.042)],[.003,.002,.0008],hair,5)
+            ball('broad metacoxal plate', (s*.092,y,-.057),(.084,.029,.018),under,14,8)
+            knee=Vector((s*.306,-.146,-.038));ankle=Vector((s*.368,-.336,-.054))
+            tip=Vector((s*.31,-.448,-.062))
+            leg('swimming_leg',[root,knee,ankle,tip],under,.022,dark)
+            leaflet('flattened_hind_tibia',knee,ankle,.030,.013,gold)
+            leaflet('flattened_hind_tarsus',ankle,tip,.018,.008,under)
+            for start,end,count in ((knee,ankle,11),(ankle,tip,6)):
+                for j in range(count):
+                    p=start.lerp(end,(j+1)/(count+1))
+                    tube('paddle_fringe',[p,p+Vector((s*.040,-.017,.001)),
+                        p+Vector((s*.065,-.032,0))],[.0022,.0014,.0005],hair,5)
 export_model(prefix,'01  DIVING BEETLE',(-1.95,.9,0))
 
 # Nepa-like broad water scorpion: grasping forelegs and paired respiratory siphon.
@@ -215,7 +234,9 @@ body=material('Leaf_brown',(.20,.12,.065),.58)
 edge=material('Dry_russet',(.37,.25,.13),.62)
 dark=material('Eyes',(.017,.013,.009),.2)
 seam=material('Seams',(.085,.055,.025),.62)
-ball('flat_abdomen',(0,-.06,0),(.208,.285,.05),body,24,12)
+chest=Thorax(mesh,ball,[(.295,.174,.125,-.028,.052),
+    (.174,.067,.152,-.038,.054),(.067,-.060,.166,-.039,.053)],body)
+ball('flat_abdomen',(0,-.19,0),(.198,.155,.047),body,24,12)
 for s in [-1,1]:
     leaflet('hemelytron',(s*.07,.17,.035),(s*.04,-.31,.041),.115,.024,edge)
     tube('wing_vein',[(s*.016,.12,.063),(s*.11,-.035,.069),(s*.06,-.255,.065)],.004,seam,6)
@@ -223,11 +244,14 @@ ball('pronotum',(0,.22,.005),(.13,.11,.045),body)
 ball('head',(0,.33,.005),(.069,.07,.043),edge)
 for s in [-1,1]:
     ball('eye',(s*.06,.34,.028),(.018,.022,.019),dark,14,8)
-    leg('grasping_foreleg',[(s*.087,.25,0),(s*.22,.42,.025),(s*.20,.53,.013),(s*.13,.39,.011)],edge,.024,seam)
+    root=chest.coxa(0,s,.023,edge,fraction=.31)
+    leg('grasping_foreleg',[root,(s*.22,.42,.025),(s*.20,.53,.013),(s*.13,.39,.011)],edge,.024,seam)
     for j in range(5):
         tube('grasping_teeth',[(s*.20,.43+j*.017,.015),(s*.175,.423+j*.017,.018)],[.005,.0008],seam,5)
-    for y,tip in [(.12,.10),(-.01,-.23)]:
-        leg('walking_leg',[(s*.15,y,0),(s*.32,y+.03,-.01),(s*.37,tip-.12,-.025),(s*.43,tip-.18,-.03)],body,.014,seam)
+    for i,tip in [(1,.10),(2,-.23)]:
+        root=chest.coxa(i,s,.014,body)
+        leg('walking_leg',[root,(s*.32,root.y+.03,-.02),
+            (s*.37,tip-.12,-.031),(s*.43,tip-.18,-.035)],body,.014,seam)
     tube('siphon_half',[(s*.011,-.31,0),(s*.009,-.52,.005),(s*.005,-.73,.01)],[.010,.007,.002],edge,8)
 tube('beak',[(0,.37,-.016),(0,.27,-.063),(0,.19,-.04)],[.018,.012,.002],seam,8)
 export_model(prefix,'02  WATER SCORPION',(-.65,.9,0))
@@ -239,24 +263,35 @@ ridge=material('Segment_rims',(.32,.32,.15),.53)
 limb=material('Jointed_limbs',(.17,.18,.075),.48)
 eye=material('Compound_eyes',(.075,.062,.029),.24)
 dark=material('Sutures',(.06,.065,.023),.6)
-for i in range(9):
-    y=.035-i*.053; w=.14*(1-.072*i)
+chest=Thorax(mesh,ball,[(.273,.204,.105,-.031,.081),
+    (.204,.138,.121,-.038,.088),(.138,.067,.125,-.040,.082)],armor)
+for i in range(10):
+    y=.039-i*.049; w=.14*(1-.071*i)
     ball('abdominal_tergite_%02d'%i,(0,y,0),(w,.04,.056*(1-i*.05)),armor)
     tube('segment_suture',[(-w*.87,y-.014,.026),(0,y-.024,.054*(1-i*.05)),(w*.87,y-.014,.026)],.004,ridge,6)
     if i>3:
         for s in [-1,1]:tube('lateral_spine',[(s*w*.85,y,0),(s*(w+.018),y-.03,.008)],[.008,.001],limb,6)
-for i in range(3):ball('thoracic_plate',(0,.10+i*.065,.023),(.12,.051,.06),armor)
 ball('head',(0,.315,.021),(.15,.09,.068),ridge,22,12)
+leaflet('folded labial mask',(0,.211,-.036),(0,.377,-.048),.050,.015,limb)
 for s in [-1,1]:
     ball('compound_eye',(s*.126,.34,.043),(.052,.057,.047),eye)
     tube('short_antenna',[(s*.065,.371,.056),(s*.071,.42,.066),(s*.095,.449,.053)],[.007,.004,.001],limb,6)
-    for i,y in enumerate([.225,.165,.10]):
-        leg('thoracic_leg',[(s*.09,y,.005),(s*(.22+i*.018),y+.03,-.005),(s*(.28+i*.02),y-.10,-.048),(s*(.32+i*.015),y-.13,-.05)],limb,.012,dark)
-    for xoff in [.045,.082]:
-        leaflet('wing_bud',(s*xoff,.18,.086),(s*(xoff*.78),-.025,.073),.028,.017,ridge)
-        tube('wing_bud_vein',[(s*xoff,.15,.102),(s*xoff*.9,.035,.094)],.003,dark,5)
+    for i in range(3):
+        root=chest.coxa(i,s,.015,limb)
+        y=root.y
+        leg('thoracic_leg',[root,(s*(.22+i*.018),y+.03,-.017),
+            (s*(.28+i*.02),y-.10,-.058),(s*(.32+i*.015),y-.13,-.06)],limb,.012,dark)
+    for i,xoff,tail in ((1,.050,-.025),(2,.085,-.074)):
+        base=chest.surface(i,.45,.96,s)
+        tip=Vector((s*xoff,tail,.061))
+        leaflet('forewing pad' if i==1 else 'hindwing pad',base,tip,.026,.012,ridge)
+        tube('wing pad seam',[base.lerp(tip,.26)+Vector((0,0,.010)),
+            base.lerp(tip,.76)+Vector((0,0,.010))],.0022,dark,5)
     tube('labial_palp',[(s*.035,.345,-.053),(s*.061,.39,-.061),(s*.014,.397,-.055)],[.014,.013,.003],limb,8)
-for x in [-.025,0,.025]:tube('terminal_spine',[(x,-.40,.006),(x*1.4,-.463,.007)],[.013,.001],limb,7)
+tube('dorsal epiproct',[(0,-.418,.024),(0,-.463,.011)],[.012,.001],limb,7)
+for s in (-1,1):
+    tube('ventral paraproct',[(s*.017,-.419,-.013),(s*.024,-.469,-.003)],[.013,.001],limb,7)
+    tube('short lateral cercus',[(s*.028,-.415,.011),(s*.037,-.444,.010)],[.008,.001],limb,7)
 export_model(prefix,'03  DRAGONFLY NYMPH',(.65,.9,0))
 
 # Generalized lepidopteran larva: 3 thoracic pairs and prolegs on A3-6 and A10.
@@ -270,7 +305,9 @@ setae=material('Setae',(.67,.63,.34),.67)
 for i in range(13):
     y=.36-i*.065; x=.028*math.sin(i*.42); z=.018*math.sin(i*.3)
     radius=.080 if i<3 else .088-.0025*max(0,i-7)
-    ball('body_segment_%02d'%i,(x,y,z),(radius,.045,radius*.92),skin,20,10)
+    segment=('T%d thorax'%(i+1)) if i<3 else ('A%d abdomen'%(i-2))
+    thoracic_shell=ball(segment,(x,y,z),(radius,.043,radius*.92),skin,18,9)
+    if i<3:thoracic_shell['thoracic_segment']=i+1
     for s in [-1,1]:
         if i==0 or 3<=i<=10:
             ball('spiracle_rim',(x+s*radius*.93,y,z+.012),(.005,.014,.012),ridge,12,6)
@@ -279,10 +316,19 @@ for i in range(13):
         for t in [0,1]:
             tube('short_seta',[(x+s*radius*.62,y+t*.012,z+radius*.62),(x+s*radius*.78,y+t*.012,z+radius*.85)],[.0015,.0004],setae,5)
         if i<3:
-            leg('thoracic_true_leg',[(x+s*.055,y,-.04),(x+s*.075,y+.01,-.084),(x+s*.072,y+.032,-.106),(x+s*.058,y+.048,-.105)],feet,.008,dark)
+            root=Vector((x+s*.050,y,z-.057))
+            socket=ball(segment+' coxa',root,(.010,.011,.009),feet,10,6)
+            socket['leg_segment']=i+1;socket['leg_side']=s
+            leg('thoracic_true_leg',[root,(x+s*.072,y+.01,z-.084),
+                (x+s*.070,y+.032,z-.106),(x+s*.058,y+.047,z-.105)],feet,.008,dark,single_claw=True)
         if i in [5,6,7,8,12]:
-            ball('abdominal_proleg',(x+s*.049,y,-.07),(.025,.023,.047),skin,14,8)
-            ring('proleg_crochets',(x+s*.049,y,-.108),.019,.016,dark,.002,n=18)
+            base=Vector((x+s*.049,y,z-.072))
+            ball(segment+' fleshy proleg',base,(.025,.024,.045),skin,14,8)
+            for j in range(10):
+                a=j*math.tau/10;out=Vector((math.cos(a),math.sin(a),0))
+                p=base+out*.014+Vector((0,0,-.035))
+                tube('proleg crochet',[p,p+Vector((0,0,-.007)),
+                    p-out*.005+Vector((0,0,-.009))],[.0018,.0014,.0005],dark,4)
 ball('head_capsule',(0,.431,-.002),(.077,.068,.074),headmat,22,12)
 for s in [-1,1]:
     for j in range(6):
@@ -300,7 +346,9 @@ case=material('Silk_case',(.25,.21,.15),.85)
 stoneA=material('Pale_grains',(.52,.47,.35),.87)
 stoneB=material('Dark_grains',(.27,.26,.21),.82)
 stoneC=material('Ochre_grains',(.40,.29,.15),.84)
-for i in range(8):ball('soft_segment',(0,.13-i*.07,0),(.073,.049,.063),soft,16,8)
+for i in range(9):
+    width=.072-i*.0037
+    ball('soft abdominal segment %d'%(i+1),(0,.135-i*.063,0),(width,.043,width*.85),soft,16,8)
 # Hollow tapered wall, rather than a sealed solid hiding the larva's head.
 verts=[];faces=[];N=28
 for y,r in [(.17,.112),(-.46,.068),(.17,.094),(-.46,.053)]:
@@ -317,15 +365,22 @@ for row in range(14):
         obj=bpy.context.object;obj.scale=(random.uniform(.019,.03),random.uniform(.025,.036),random.uniform(.014,.024))
         obj.rotation_euler=(random.random()*2,random.random()*2,random.random()*2)
         finish(obj,'case_grain',random.choice([stoneA,stoneB,stoneC]),False)
+chest=Thorax(mesh,ball,[(.349,.291,.074,-.043,.075),
+    (.291,.229,.072,-.045,.064),(.229,.165,.070,-.047,.055)],chitin)
 for i in range(3):
-    y=.20+i*.06
-    ball('thoracic_shield',(0,y,.023),(.073,.039,.052),chitin)
     for s in [-1,1]:
-        leg('thoracic_leg',[(s*.054,y,-.004),(s*.116,y+.025,-.015),(s*.13,y+.06,-.043),(s*.117,y+.081,-.049)],chitin,.009,dark)
+        root=chest.coxa(i,s,.011,chitin)
+        y=root.y
+        leg('thoracic_leg',[root,(s*.116,y+.025,-.023),(s*.13,y+.06,-.049),
+            (s*.117,y+.081,-.052)],chitin,.009,dark,single_claw=True)
 ball('head',(0,.385,.013),(.068,.064,.053),chitin)
 for s in [-1,1]:
     ball('stemmata',(s*.06,.402,.035),(.009,.016,.01),dark,12,6)
     tube('mandible',[(s*.026,.431,.005),(s*.034,.455,-.001),(s*.005,.461,-.004)],[.012,.009,.003],dark,7)
+    tube('terminal anal proleg',[(s*.017,-.388,-.014),(s*.027,-.422,-.019),
+        (s*.040,-.448,-.014)],[.012,.010,.007],soft,8)
+    tube('terminal anal hook',[(s*.040,-.446,-.014),(s*.052,-.454,-.011),
+        (s*.049,-.462,-.007)],[.004,.003,.0007],chitin,7)
 export_model(prefix,'05  CADDISFLY LARVA',(-1.95,-.95,0))
 
 def cell_body(name, widths, lengths, heights, mat, n=32, cutaway=False, bend=.0):
