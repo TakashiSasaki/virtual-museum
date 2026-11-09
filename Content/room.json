@@ -2,68 +2,68 @@
     "version": 1,
     "entries": [
         {
-            "file": "room-aimonite-75a74a276ee80bcd5f1e4216843bd46b.bundle",
-            "bytes": 4512378
+            "file": "room-aimonite-d188a7d2a3f4de0f6148c58d54d8f22e.bundle",
+            "bytes": 4537284
         },
         {
-            "file": "room-labdrawercabinet-0dfa64e8d9017abadda8a4c9b4f80f5e.bundle",
-            "bytes": 264390
+            "file": "room-labdrawercabinet-c23a924e5cbe1fc82994716de75f1cb4.bundle",
+            "bytes": 257380
         },
         {
-            "file": "room-labroundstool-0deda1913bd4b6608f88915b602e206e.bundle",
-            "bytes": 540837
+            "file": "room-labroundstool-fafb74a7680e6a75aebce608f1ae5be1.bundle",
+            "bytes": 544978
         },
         {
-            "file": "room-labswivelchair-cf65e48cc791c8470375a81e30548154.bundle",
-            "bytes": 486750
+            "file": "room-labswivelchair-781fb78f78c37fa979dbba4fb5fe5dc9.bundle",
+            "bytes": 485589
         },
         {
-            "file": "room-labtallcabinet-242b7cc0e85fceb4c039a2948c2f86a4.bundle",
-            "bytes": 297101
+            "file": "room-labtallcabinet-0118302c60e861c3b077f886ba94728c.bundle",
+            "bytes": 296150
         },
         {
-            "file": "room-labutilitycart-f831888a3e75a295b6401a157ed14250.bundle",
-            "bytes": 495757
+            "file": "room-labutilitycart-4d690ffc3f030442a377b4a7851b1919.bundle",
+            "bytes": 499910
         },
         {
-            "file": "room-microscope-0218b3da555557fce7232244ad516617.bundle",
-            "bytes": 1395338
+            "file": "room-microscope-b2637b39e0765bd28d20f4f5ef591b14.bundle",
+            "bytes": 1393498
         },
         {
-            "file": "room-observationbench-839a55b1dab5d9198b6d21e21de38c39.bundle",
-            "bytes": 17892
+            "file": "room-observationbench-bfd9480ddb13a926c3113e9e172d0391.bundle",
+            "bytes": 17893
         },
         {
-            "file": "room-specimenshelf-c52cd49518b2eeff373c6213cc51cd24.bundle",
-            "bytes": 918108
+            "file": "room-specimenshelf-ac6c338631fb3a639a104372ce519a27.bundle",
+            "bytes": 923880
         },
         {
-            "file": "room-surface-laminate-de1b0363a99f6b78f1797041a26a1084.bundle",
-            "bytes": 285685
+            "file": "room-surface-laminate-2b2757188415aa9480e8771490db5138.bundle",
+            "bytes": 285682
         },
         {
-            "file": "room-surface-carpet-3d9d47fbe996bb7b127cfca3aee3917d.bundle",
-            "bytes": 2304245
+            "file": "room-surface-carpet-3a4da24b9580373f3d9dd9f1344fd948.bundle",
+            "bytes": 2304212
         },
         {
-            "file": "room-surface-wallpaint-4bf7019e3144cf1c8f7476c8032acd3f.bundle",
-            "bytes": 1811772
+            "file": "room-surface-wallpaint-8581de1dae558345fb5329f7c521d5fd.bundle",
+            "bytes": 1811806
         },
         {
-            "file": "room-surface-walnut-f1758269c9108f3c74b10250af2b85ae.bundle",
-            "bytes": 1271999
+            "file": "room-surface-walnut-8582b565f5ffe34027c6e6988e97bb26.bundle",
+            "bytes": 1272097
         },
         {
-            "file": "room-surface-powdercoat-763c8105910d7df2ab897211cc912691.bundle",
-            "bytes": 261198
+            "file": "room-surface-powdercoat-5e2d44e397dcd32ef50fe28aca5dd470.bundle",
+            "bytes": 261185
         },
         {
-            "file": "room-surface-rubbermat-5d1d6657a67ca76752a32c923ab2f706.bundle",
+            "file": "room-surface-rubbermat-f21e31fe9c55c1aa85485e562c8a787d.bundle",
             "bytes": 252807
         },
         {
-            "file": "room-surface-vinylfloor-3773c80ff94ec4bb766dfdd1d1b9b459.bundle",
-            "bytes": 285154
+            "file": "room-surface-vinylfloor-d0662012f2deadff3379190d207d831b.bundle",
+            "bytes": 285153
         }
     ]
 }
