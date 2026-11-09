@@ -8,7 +8,12 @@ using TouchPhase = UnityEngine.InputSystem.TouchPhase;
 
 public partial class MuseumExperience
 {
-    [Serializable] class WebViewport { public float width, height; public bool touch; }
+    [Serializable] class WebViewport
+    {
+        public float width, height;
+        public int renderWidth, renderHeight;
+        public bool touch, lightweight;
+    }
     enum FingerUse { Ignored, Walk, World, UI }
     sealed class Gesture
     {
@@ -21,6 +26,7 @@ public partial class MuseumExperience
         public float centerHeld;
     }
     readonly Dictionary<int, Gesture> gestures = new();
+    readonly Dictionary<Light, LightShadows> webPointShadows = new();
     WebViewport webViewport;
     bool touchSeen, externalOverlay;
     float suppressMouseUntil;
@@ -51,8 +57,30 @@ public partial class MuseumExperience
     {
         var viewport=JsonUtility.FromJson<WebViewport>(json);
         if(viewport==null || viewport.width<1 || viewport.height<1) return;
-        if(webViewport!=null && (Mathf.Abs(viewport.width-webViewport.width)>1 || Mathf.Abs(viewport.height-webViewport.height)>1)) CancelTouchGestures();
+        if (webViewport != null && (Mathf.Abs(viewport.width - webViewport.width) > 1 ||
+            Mathf.Abs(viewport.height - webViewport.height) > 1 || viewport.renderWidth != webViewport.renderWidth ||
+            viewport.renderHeight != webViewport.renderHeight)) CancelTouchGestures();
+        if (viewport.lightweight != (webViewport?.lightweight ?? false)) SetWebPointShadows(viewport.lightweight);
         webViewport=viewport;
+    }
+
+    void SetWebPointShadows(bool lightweight)
+    {
+        if (lightweight)
+        {
+            // Each point light can render shadow maps in six directions.
+            foreach (var light in FindObjectsByType<Light>())
+            {
+                if (light.type != LightType.Point || light.shadows == LightShadows.None) continue;
+                webPointShadows.Add(light, light.shadows);
+                light.shadows = LightShadows.None;
+            }
+            return;
+        }
+
+        foreach (var entry in webPointShadows)
+            if (entry.Key) entry.Key.shadows = entry.Value;
+        webPointShadows.Clear();
     }
 
     public void SetWebOverlay(string value)

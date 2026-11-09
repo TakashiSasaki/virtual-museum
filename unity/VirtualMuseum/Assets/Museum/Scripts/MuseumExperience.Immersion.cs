@@ -258,6 +258,8 @@ public partial class MuseumExperience
 
     void OnDisable()
     {
+        SetWebPointShadows(false);
+        webViewport=null;
         CloseGuideConversation();CancelArrivalTurn();CancelTouchGestures();
         if(enhancedTouchOwned) {EnhancedTouchSupport.Disable();enhancedTouchOwned=false;}
         CloseObservationImmediately();

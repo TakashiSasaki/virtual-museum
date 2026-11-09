@@ -55,6 +55,14 @@
       <p class="quick-help pointer-copy"><kbd>WASD</kbd> / <kbd>↑↓←→</kbd> 移動 <span>·</span> 右ドラッグで見回す <span>·</span> <kbd>E</kbd> 観察 <span>·</span> <kbd>Esc</kbd> 戻る</p>
       <p class="quick-help touch-copy">タップして移動・観察 <span>·</span> ドラッグで見回す</p>
       <div class="toolbar-actions">
+        <label class="quality-control">
+          <span>画質</span>
+          <select id="quality-select">
+            <option value="auto">自動</option>
+            <option value="standard">標準</option>
+            <option value="light">軽量</option>
+          </select>
+        </label>
         <button id="help-button" class="text-button" type="button" aria-expanded="false" aria-controls="control-guide">操作案内</button>
         <button id="fullscreen-button" class="text-button" type="button" disabled aria-label="展示室を全画面で表示">全画面 <span aria-hidden="true">⛶</span></button>
       </div>
@@ -80,6 +88,7 @@
       </dl>
       <p>体験した場所のサインにはチェックが付きます。再び観察することもできます。</p>
       <p>画面上部の「バックヤード」から、未展示の模型も一覧で選んで観察できます。</p>
+      <p>動きが重いときは、画質を「軽量」に切り替えられます。「自動」はフレームの間隔が長い状態が続くと軽量表示に切り替えます。</p>
     </aside>
   </main>
   <script>
@@ -98,12 +107,27 @@
       const progressText = document.getElementById("progress-text");
       const errorPanel = document.getElementById("error-panel");
       const fullscreenButton = document.getElementById("fullscreen-button");
+      const qualitySelect = document.getElementById("quality-select");
+      const autoOption = qualitySelect.options[0];
       const helpButton = document.getElementById("help-button");
       const guide = document.getElementById("control-guide");
       const coarsePointer = window.matchMedia("(any-pointer: coarse)");
       let started = false;
       let viewportFrame = 0;
       let lastViewport = "";
+      let autoLight = false;
+      let qualityFrame = 0;
+      let sampleAfter = 0;
+      let sampleStart = 0;
+      let sampleFrames = 0;
+      let slowWindows = 0;
+
+      try {
+        const saved = localStorage.getItem("virtual-museum.quality");
+        if (saved === "standard" || saved === "light") qualitySelect.value = saved;
+      } catch {
+        // Private browsing or a storage policy can block persistence.
+      }
 
       function sendToMuseum(method, value) {
         if (!window.unityInstance) return false;
@@ -121,11 +145,69 @@
         const touch = coarsePointer.matches || navigator.maxTouchPoints > 0;
         app.dataset.input = touch ? "touch" : "pointer";
         const bounds = canvas.getBoundingClientRect();
-        const viewport = JSON.stringify({ width: Math.round(bounds.width), height: Math.round(bounds.height), touch });
-        if (window.unityInstance && viewport !== lastViewport && bounds.width > 0 && bounds.height > 0) {
+        const width = Math.round(bounds.width);
+        const height = Math.round(bounds.height);
+        if (width < 1 || height < 1) return;
+        const lightweight = qualitySelect.value === "light" || (qualitySelect.value === "auto" && autoLight);
+        const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+        // Bound the WebGL buffer independently of the CSS size used for input.
+        const scale = lightweight ? Math.min(dpr * .75, 1, Math.sqrt(1000000 / (width * height))) : dpr;
+        const renderWidth = Math.max(1, Math.floor(width * scale));
+        const renderHeight = Math.max(1, Math.floor(height * scale));
+        if (canvas.width !== renderWidth) canvas.width = renderWidth;
+        if (canvas.height !== renderHeight) canvas.height = renderHeight;
+        const viewport = JSON.stringify({ width, height, renderWidth, renderHeight, touch, lightweight });
+        if (window.unityInstance && viewport !== lastViewport) {
           if (sendToMuseum("SetWebViewport", viewport)) lastViewport = viewport;
         }
       }
+
+      function measureFrame(now) {
+        if (now >= sampleAfter) {
+          if (!sampleStart) sampleStart = now;
+          else sampleFrames++;
+          const elapsed = now - sampleStart;
+          if (elapsed >= 2000) {
+            slowWindows = sampleFrames * 1000 / elapsed < 32 ? slowWindows + 1 : 0;
+            sampleStart = now;
+            sampleFrames = 0;
+            if (slowWindows >= 3) {
+              autoLight = true;
+              autoOption.textContent = "自動（軽量）";
+              qualityFrame = 0;
+              syncViewport();
+              return;
+            }
+          }
+        }
+        qualityFrame = requestAnimationFrame(measureFrame);
+      }
+
+      function resetQualityMonitor() {
+        cancelAnimationFrame(qualityFrame);
+        qualityFrame = 0;
+        if (app.dataset.state !== "running" || document.hidden || !guide.hidden ||
+            qualitySelect.value !== "auto" || autoLight) return;
+        sampleAfter = performance.now() + 4000;
+        sampleStart = 0;
+        sampleFrames = 0;
+        slowWindows = 0;
+        qualityFrame = requestAnimationFrame(measureFrame);
+      }
+
+      qualitySelect.addEventListener("change", () => {
+        autoLight = false;
+        autoOption.textContent = "自動";
+        try {
+          localStorage.setItem("virtual-museum.quality", qualitySelect.value);
+        } catch {
+          // The selected quality still applies to the current visit.
+        }
+        syncViewport();
+        resetQualityMonitor();
+        if (app.dataset.state === "running" && guide.hidden) canvas.focus({ preventScroll: true });
+      });
+      document.addEventListener("visibilitychange", resetQualityMonitor);
 
       function scheduleViewport() {
         if (!viewportFrame) viewportFrame = requestAnimationFrame(syncViewport);
@@ -145,6 +227,7 @@
         errorPanel.hidden = false;
         document.getElementById("error-message").textContent = "展示室を読み込めませんでした。通信状況を確認して、もう一度お試しください。続く場合は、最新版のChrome・Edge・Firefoxで開いてください。";
         fullscreenButton.disabled = true;
+        resetQualityMonitor();
       }
 
       function showBanner(message, type) {
@@ -173,7 +256,7 @@
         companyName: {{{ JSON.stringify(COMPANY_NAME) }}},
         productName: {{{ JSON.stringify(PRODUCT_NAME) }}},
         productVersion: {{{ JSON.stringify(PRODUCT_VERSION) }}},
-        devicePixelRatio: Math.min(window.devicePixelRatio || 1, 1.5),
+        matchWebGLToCanvasSize: false,
         showBanner,
         errorHandler: (error) => { showError(error); return true; }
       };
@@ -201,6 +284,7 @@
             loading.hidden = true;
             fullscreenButton.disabled = !document.fullscreenEnabled;
             syncViewport();
+            resetQualityMonitor();
             sendToMuseum("SetWebOverlay", guide.hidden ? "0" : "1");
             if (guide.hidden) canvas.focus({ preventScroll: true });
           }).catch(showError);
@@ -223,12 +307,14 @@
         canvas.focus();
       });
       document.addEventListener("fullscreenchange", () => {
+        scheduleViewport();
         fullscreenButton.textContent = document.fullscreenElement ? "全画面を終了 ⛶" : "全画面 ⛶";
         fullscreenButton.setAttribute("aria-label", document.fullscreenElement ? "全画面表示を終了" : "展示室を全画面で表示");
       });
 
       function setHelp(open) {
         guide.hidden = !open;
+        resetQualityMonitor();
         helpButton.setAttribute("aria-expanded", String(open));
         sendToMuseum("SetWebOverlay", open ? "1" : "0");
         if (open) document.getElementById("close-help-button").focus();

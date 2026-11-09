@@ -49,6 +49,8 @@ progress::-moz-progress-bar { background: #dfbd7d; }
 .quick-help span { color: #425f70; padding: 0 9px; }
 kbd { color: #d2dfe4; font-family: inherit; font-size: 10px; }
 .toolbar-actions { display: flex; gap: 16px; flex: 0 0 auto; }
+.quality-control { display: flex; align-items: center; gap: 4px; color: #c3d4dc; font-size: 12px; white-space: nowrap; }
+.quality-control select { min-height: 44px; padding: 0 4px; font: inherit; color: inherit; background: #142b3a; border: 1px solid #4a6675; border-radius: 3px; }
 .text-button { min-width: 44px; border: 0; background: transparent; padding: 10px 8px; color: #c3d4dc; font-size: 11px; letter-spacing: .05em; }
 .text-button:hover:not(:disabled) { color: #efcd91; }
 .text-button span { margin-left: 4px; }
