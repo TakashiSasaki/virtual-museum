@@ -39,9 +39,9 @@ jobs:
           test -f Content/catalog.json
           test -f Content/room.json
       - name: Upload the Web player
-        uses: actions/upload-pages-artifact@v4
+        uses: actions/upload-pages-artifact@v5
         with:
           path: .
       - name: Publish to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
